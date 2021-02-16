@@ -1,0 +1,11 @@
+{
+  "name": "chatapi-lambda",
+  "version": "1.0.0",
+  "description": "Chat API Lambda",
+  "main": "index.js",
+  "author": "mcosic",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^7.19.0"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "demo-website",
+  "version": "1.0.0",
+  "description": "Demo Website - Customer",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack -p --config=webpack.config.prod.js",
+    "build:dev": "webpack -d --config=webpack.config.dev.js",
+    "start:dev": "webpack-dev-server --https --config=webpack.config.dev.js"
+  },
+  "dependencies": {
+    "amazon-chime-sdk-js": "1.22.0",
+    "bootstrap": "^4.3.1",
+    "jquery": "^3.4.1",
+    "popper.js": "^1.15.0"
+  },
+  "author": "mcosic",
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.10",
+    "autoprefixer": "9.6.4",
+    "babel-loader": "^8.2.2",
+    "babel-polyfill": "^6.26.0",
+    "css-loader": "3.2.0",
+    "file-loader": "^6.2.0",
+    "html-webpack-inline-source-plugin": "0.0.10",
+    "html-webpack-plugin": "3.2.0",
+    "node-sass": "^4.12.0",
+    "open-iconic": "^1.1.1",
+    "postcss-loader": "3.0.0",
+    "precss": "4.0.0",
+    "raw-loader": "3.1.0",
+    "remove-files-webpack-plugin": "^1.4.4",
+    "sass-loader": "8.0.0",
+    "style-loader": "1.0.0",
+    "url-loader": "^4.1.1",
+    "webpack": "^4.32.2",
+    "webpack-cli": "3.3.2",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.7.3"
+  }
+}

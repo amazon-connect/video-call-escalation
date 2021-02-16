@@ -1,0 +1,16 @@
+.VideoAgent {
+    text-align: left;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .mainLeft{
+    padding: 1.5em;
+    width: 320px
+  }
+
+  .mainRight{
+    padding: 1.5em;
+    min-width: 800px;
+    width: 90%
+  }

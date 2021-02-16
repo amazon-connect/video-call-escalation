@@ -1,0 +1,11 @@
+{
+  "name": "connectapi-lambda",
+  "version": "1.0.0",
+  "description": "CCP Login Lambda",
+  "main": "index.js",
+  "dependencies": {},
+  "author": "mcosic",
+  "devDependencies": {
+    "eslint": "^7.19.0"
+  }
+}

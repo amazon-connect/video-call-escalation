@@ -1,0 +1,12 @@
+{
+  "name": "utility-layer",
+  "version": "1.0.0",
+  "description": "Utility Layer",
+  "main": "index.js",
+  "author": "mcosic",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.4"
+  }
+}

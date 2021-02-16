@@ -1,0 +1,48 @@
+{
+  "name": "agent-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@aws-amplify/api": "^3.2.14",
+    "@aws-amplify/auth": "^3.4.14",
+    "@aws-amplify/core": "^3.8.6",
+    "@aws-amplify/ui-react": "^0.2.31",
+    "@testing-library/jest-dom": "^5.11.6",
+    "@testing-library/react": "^11.2.2",
+    "@testing-library/user-event": "^12.3.0",
+    "amazon-chime-sdk-component-library-react": "1.5.0",
+    "amazon-chime-sdk-js": "1.22.0",
+    "amazon-connect-chatjs": "^1.0.8",
+    "amazon-connect-streams": "^1.6.0",
+    "react": "16.12.0",
+    "react-dom": "16.12.0",
+    "react-router-dom": "5.1.2",
+    "react-scripts": "3.4.3",
+    "styled-components": "^5.2.1",
+    "styled-system": "^5.1.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
