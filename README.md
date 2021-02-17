@@ -209,7 +209,7 @@ Please follow these steps to enable AWS SSO for your deployment:
     Subject | `${user:subject}` | persistent
     name | `${user:name}` | basic
     email | `${user:email}` | basic
-    email_verified | `${user:email}` | basic
+    email_verified | `true` | basic
     ---  
     - Click *Save changes*
     - On the top of the page, select *Assigned users* tab and click *Assign users*
