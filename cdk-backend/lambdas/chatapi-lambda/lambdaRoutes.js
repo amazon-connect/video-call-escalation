@@ -12,7 +12,8 @@ let lambdaRoutesMap = new Map()
 lambdaRoutesMap.set('POST /start', async (req) => {
 
   //this is needed due to 'amazon-connect-chat-interface' not setting proper headers (content-type) and sending stringified JSON in the body
-  const bodyJSON = JSON.parse(Buffer.from(req.body, 'base64').toString('utf8'));
+  const bodyStr = req.isBase64Encoded?Buffer.from(req.body, 'base64').toString('utf8') : req.body
+  const bodyJSON = JSON.parse(bodyStr);
 
   const startChatResult = await chatAPI.startChat(bodyJSON['ContactFlowId'], bodyJSON['ParticipantDetails'], bodyJSON['Attributes']);
   console.info('Start chat result: ', startChatResult);
