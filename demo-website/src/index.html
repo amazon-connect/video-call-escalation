@@ -198,7 +198,7 @@
           <div class="col-12" style="text-align:center;padding:0">
             <div class="btn-group m-1" role="group" aria-label="Toggle microphone">
               <button id="button-microphone" type="button" class="btn btn-success" title="Toggle microphone">
-                ${require('../node_modules/open-iconic/svg/microphone.svg').default}
+                <%= require('../node_modules/open-iconic/svg/microphone.svg').default %>
               </button>
               <div class="btn-group" role="group">
                 <button id="button-microphone-drop" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Select microphone"></button>
@@ -209,7 +209,7 @@
             </div>
             <div class="btn-group m-1" role="group" aria-label="Toggle camera">
               <button id="button-camera" type="button" class="btn btn-success" title="Toggle camera">
-                ${require('../node_modules/open-iconic/svg/video.svg').default}
+                <%= require('../node_modules/open-iconic/svg/video.svg').default %>
               </button>
               <div class="btn-group" role="group">
                 <button id="button-camera-drop" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Select camera"></button>
@@ -219,11 +219,11 @@
               </div>
             </div>
             <button id="button-screen-share" type="button" class="btn btn-outline-secondary m-1" title="Toggle screen share">
-              ${require('../node_modules/open-iconic/svg/monitor.svg').default}
+              <%= require('../node_modules/open-iconic/svg/monitor.svg').default %>
             </button>
             <div class="btn-group m-1" role="group" aria-label="Toggle speaker">
               <button id="button-speaker" type="button" class="btn btn-success" title="Toggle speaker">
-                ${require('../node_modules/open-iconic/svg/volume-low.svg').default}
+                <%= require('../node_modules/open-iconic/svg/volume-low.svg').default %>
               </button>
               <div class="btn-group" role="group">
                 <button id="button-speaker-drop" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Select speaker"></button>
@@ -233,15 +233,15 @@
               </div>
             </div>
             <button id="button-screen-view" type="button" class="btn btn-outline-secondary m-1" title="Toggle screen share view" style="visibility: hidden;">
-              ${require('../node_modules/open-iconic/svg/browser.svg').default}
+              <%= require('../node_modules/open-iconic/svg/browser.svg').default %>
             </button>
           </div>
           <div class="col-2 text-right" id="end-wrapper" style="display:none">
             <button id="button-meeting-leave" type="button" class="btn btn-outline-danger m-2 px-4" title="Leave meeting">
-              ${require('../node_modules/open-iconic/svg/account-logout.svg').default}
+              <%= require('../node_modules/open-iconic/svg/account-logout.svg').default %>
             </button>
             <button id="button-meeting-end" type="button" class="btn btn-outline-danger m-2 px-4" title="End meeting">
-              ${require('../node_modules/open-iconic/svg/power-standby.svg').default}
+              <%= require('../node_modules/open-iconic/svg/power-standby.svg').default %>
             </button>
           </div>
         </div>

@@ -213,6 +213,7 @@ export class DemoMeetingApp {
 
                     document.getElementById('content').style.display = 'none';
                 } catch (error) {
+                    console.error(error);
                     document.getElementById('failed-join').innerHTML = `Meeting ID: ${this.meeting}`;
                     document.getElementById('failed-join-error').innerHTML = `Error: ${error.message}`;
                 }
@@ -304,7 +305,7 @@ export class DemoMeetingApp {
     }
 
     displayButtonStates() {
-        for (const button in this.buttonStates) {
+        for (const button in this.buttonStates) { 
             const element = document.getElementById(button);
             const drop = document.getElementById(`${button}-drop`);
             const on = this.buttonStates[button];

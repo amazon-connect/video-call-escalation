@@ -2,11 +2,6 @@ const { merge } = require('webpack-merge')
 const commonConfig = require('./webpack.config.common')
 
 module.exports = merge(commonConfig, {
-  mode: 'development',
-  devtool: 'source-map',
+  mode: 'production',
   output : { publicPath : '/'},
-  devServer: {
-            open: true,
-            openPage: 'demo-website.html'
-        }
 })

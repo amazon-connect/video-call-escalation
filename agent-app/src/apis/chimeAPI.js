@@ -1,13 +1,13 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { API } from '@aws-amplify/api';
+import { RestAPI } from '@aws-amplify/api-rest';
 import { Auth } from '@aws-amplify/auth';
 
 export const createMeeting = async (meetingTitle, meetingRegion, attendeeName) => {
     //get current Cognito ID Token
     let cid = (await Auth.currentSession()).getIdToken().getJwtToken();
-    const response = await API.post('videoCallEscalationChimeAPI', '/meeting', {
+    const response = await RestAPI.post('videoCallEscalationChimeAPI', '/meeting', {
         headers: {
             cognitoIdToken: cid
         },
@@ -27,7 +27,7 @@ export const createMeeting = async (meetingTitle, meetingRegion, attendeeName) =
 export const endMeeting = async (meetingTitle) => {
     //get current Cognito ID Token
     let cid = (await Auth.currentSession()).getIdToken().getJwtToken();
-    const response = await API.del('videoCallEscalationChimeAPI', '/meeting', {
+    const response = await RestAPI.del('videoCallEscalationChimeAPI', '/meeting', {
         headers: {
             cognitoIdToken: cid
         },
@@ -44,7 +44,7 @@ export const endMeeting = async (meetingTitle) => {
 
 export const createGetAttendeeCallback = (meetingTitle) => {
     return async (chimeAttendeeId, externalUserId) => {
-        const response = await API.get('videoCallEscalationChimeAPI', `/attendee?meetingTitle=${meetingTitle}&attendeeExternalUserId=${externalUserId}`)
+        const response = await RestAPI.get('videoCallEscalationChimeAPI', `/attendee?meetingTitle=${meetingTitle}&attendeeExternalUserId=${externalUserId}`)
         .catch(error => {
             console.error('Get Attendee >> ', error.response);
             throw new Error (`Get Attendee Error >> ${error.response.data.message}`);
@@ -56,7 +56,7 @@ export const createGetAttendeeCallback = (meetingTitle) => {
 export const createAttendee = async (meetingTitle, attendeeExternalUserId, attendeeName) => {
     //get current Cognito ID Token
     let cid = (await Auth.currentSession()).getIdToken().getJwtToken();
-    const response = await API.post('videoCallEscalationChimeAPI', '/attendee', {
+    const response = await RestAPI.post('videoCallEscalationChimeAPI', '/attendee', {
         headers: {
             cognitoIdToken: cid
         },
