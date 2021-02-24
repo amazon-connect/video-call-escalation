@@ -21,3 +21,6 @@ template.yaml
 
 # CDK context - auto-generated
 cdk.context.json
+
+#build folder
+build

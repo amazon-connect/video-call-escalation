@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 const ErrorHandler = require('./error');
-const getUserFromJWT = require('/opt/utility-handler/httpapi-decode-verify-jwt');
+const getUserFromJWT = require('/opt/httpapi-decode-verify-jwt');
 const connectAPI = require('./connectAPI');
 
 let lambdaRoutesMap = new Map()

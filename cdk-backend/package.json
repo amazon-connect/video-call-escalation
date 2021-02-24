@@ -1,6 +1,9 @@
 {
   "name": "cdk-backend",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "author": "mcosic",
+  "repository": "https://github.com/amazon-connect/video-call-escalation",
+  "license": "MIT-0",
   "bin": {
     "cdk-backend": "bin/cdk-backend.js"
   },

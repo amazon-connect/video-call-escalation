@@ -3,7 +3,7 @@
 
 const ErrorHandler = require('./error');
 const meetings = require('./meetings');
-const getUserFromJWT = require('/opt/utility-handler/httpapi-decode-verify-jwt');
+const getUserFromJWT = require('/opt/httpapi-decode-verify-jwt');
 
 
 let lambdaRoutesMap = new Map()

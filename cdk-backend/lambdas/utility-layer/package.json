@@ -1,0 +1,21 @@
+{
+  "name": "utility-layer",
+  "version": "1.0.0",
+  "description": "Utility Layer",
+  "main": "index.js",
+  "author": "mcosic",
+  "repository": "https://github.com/amazon-connect/video-call-escalation",
+  "license": "MIT-0",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.8.50",
+    "eslint": "^7.20.0"
+  },
+  "scripts": {
+    "build": "esbuild *.js --bundle --platform=node --external:aws-sdk --outdir=build --target=node12"
+  }
+}

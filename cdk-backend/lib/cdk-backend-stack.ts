@@ -165,14 +165,14 @@ export class CdkBackendStack extends cdk.Stack {
 
     //create Utility Layer
     const utilityLayer = new lambda.LayerVersion(this, 'VideoCallEscalationUtilityLayer', {
-      code: lambda.Code.fromAsset('lambdas/utility-layer'),
+      code: lambda.Code.fromAsset('lambdas/utility-layer/build'),
       compatibleRuntimes : [lambda.Runtime.NODEJS_12_X]
     });
 
     //create connectAPI Lambda
    const connectAPILambda = new lambda.Function(this, 'ConnectAPILambda', {
     runtime: lambda.Runtime.NODEJS_12_X,
-    code: lambda.Code.fromAsset('lambdas/connectapi-lambda'),
+    code: lambda.Code.fromAsset('lambdas/connectapi-lambda/build'),
     handler: 'index.handler',
     timeout: cdk.Duration.seconds(30),
     layers: [utilityLayer],
@@ -263,7 +263,7 @@ export class CdkBackendStack extends cdk.Stack {
    //create chimeAPI Lambda
    const chimeAPILambda = new lambda.Function(this, 'ChimeAPILambda', {
     runtime: lambda.Runtime.NODEJS_12_X,
-    code: lambda.Code.fromAsset('lambdas/chimeapi-lambda'),
+    code: lambda.Code.fromAsset('lambdas/chimeapi-lambda/build'),
     handler: 'index.handler',
     timeout: cdk.Duration.seconds(30),
     layers: [utilityLayer],
@@ -401,7 +401,7 @@ export class CdkBackendStack extends cdk.Stack {
   //create chatAPI Lambda
   const chatAPILambda = new lambda.Function(this, 'ChatAPILambda', {
     runtime: lambda.Runtime.NODEJS_12_X,
-    code: lambda.Code.fromAsset('lambdas/chatapi-lambda'),
+    code: lambda.Code.fromAsset('lambdas/chatapi-lambda/build'),
     handler: 'index.handler',
     timeout: cdk.Duration.seconds(30),
     environment: {

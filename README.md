@@ -79,6 +79,8 @@ This step assumes you have completed all the prerequisites, and you have an exis
     - you can also use profiles (i.e. `export AWS_PROFILE=yourProfile`)
     - you can confirm the configured region with  
      `aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]'`
+    - In case you started with a new environment, please bootstrap CDK:  
+    `cdk bootstrap aws://yourAccountNumber/yourDesiredRegion`
 
 1. Install NPM packages 
     - Open your Terminal and navigate to the root of solution (`video-call-escalation`)
@@ -104,8 +106,6 @@ This step assumes you have completed all the prerequisites, and you have an exis
 
 1. Deploy CDK-Backend
     - In your terminal, navigate to `video-call-escalation/cdk-backend`
-    - In case you started with a new environment, please bootstrap CDK:  
-    `cdk bootstrap aws://yourAccountNumber/yourDesiredRegion`
     - Run the deploy script: `./deploy.sh`
     - Wait for all resources to be provisioned before continuing to the next step
     - AWS CDK output will be provided in your Terminal

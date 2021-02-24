@@ -23,15 +23,12 @@ npm install
 echo "install lambdas in cdk-backend"
 for i in  lambdas/*; do 
     base=$(basename "$i");
+    echo ""
     echo "install lambdas in cdk-backend - $base"
+    echo ""
     cd $i;
     if [ -f "package.json" ]; then
         npm install;
-    elif [ -d "nodejs" ]; then
-        cd nodejs
-        if [ -f "package.json" ]; then
-        npm install
-        fi
     else 
         echo "$base - package.json not found"
     fi
