@@ -35,10 +35,16 @@
         {
             "name" : "websiteAPIAllowedOrigins",
             "cliFormat" : "website-api-allowed-origins",
-            "description" : "Please provide the domain og your website, to allow CORS. For example: https://aaaabbbbcccc.cloudfront.net",
+            "description" : "Please provide the domain of your website, to allow CORS. For example: https://aaaabbbbcccc.cloudfront.net",
             "defaultValue" : "*",
             "required" : true
         },
+        {
+            "name" : "websiteAdHocRouteBaseURL",
+            "cliFormat" : "website-ad-hoc-route-base-url",
+            "description" : "Please provide the full URL of your website, for example: https://aaaabbbbcccc.cloudfront.net/demo-website.html . To create a link for ad-hoc route which agents can share with customers, websiteAdHocRouteBaseURL is concatenated with a generated Route Id. For demo purposes, agent-app and demo-website have the same host (CloudFront), hence you can leave this parameter empty.",
+            "required" : false
+         },
         {
             "name" : "cognitoSAMLEnabled",
             "cliFormat" : "cognito-saml-enabled",

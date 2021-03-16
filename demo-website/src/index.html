@@ -13,10 +13,10 @@
     <!-- Initial meeting authentication screen with meeting and name inputs -->
     <div id="content" style="display: none">
       <div id="content-handle" class="content-handle"></div>
+      <div id='header-title-authenticate' class="header-title-authenticate flow">
+        <h1 class="h3 mb-3 font-weight-normal" style="font-size:1.7rem">Video Call Escalation</h1>
+      </div>
       <div id="flow-authenticate" class="flow text-center">
-        <div id='header-title-authenticate' style="position:relative; top: -100px; width: 100%; text-align: center;">
-          <h1 class="h3 mb-3 font-weight-normal" style="font-size:1.7rem">Video Call Escalation</h1>
-        </div>
         <div class="container">
           <form id="form-authenticate" style="width:250px">
             
@@ -52,9 +52,22 @@
                 <option value="us-west-2">United States (Oregon)</option>
               </select>
             </div>
-            <div class="row mt-3">
+
+            <div class="row">
+              <button id="button-expand-reference" type="button" class="btn form-control" title="Expand Reference">
+                <%= require('../node_modules/open-iconic/svg/chevron-bottom.svg').default %>
+                <%= require('../node_modules/open-iconic/svg/chevron-top.svg').default %>
+              </button>
+              <div id="div-expand-reference" style="width: 100%; display: none;">
+                <label for="inputReferenceId" class="sr-only">Reference (optional)</label>
+                <input type="name" id="inputReferenceId" class="form-control" placeholder="Reference (optional)" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="row">
               <button id="authenticate" class="btn btn-lg btn-primary btn-block" type="submit">Continue</button>
             </div>
+
             <div class="row mt-3" style="display:none">
               <p>Anyone with access to the meeting link can join.</p>
             </div>

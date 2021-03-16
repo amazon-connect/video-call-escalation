@@ -24,6 +24,7 @@ export function AppStateProvider({ children }) {
   const [cognitoUsername, setCognitoUsername] = useState('');
   const [authState, setAuthState] = useState('');
   const [connectLoginByEmail, setConnectLoginByEmail] = useState(false);
+  const [connectUsername, setConnectUsername] = useState('')
   
   
   const [theme, setTheme] = useState(() => {
@@ -69,11 +70,13 @@ export function AppStateProvider({ children }) {
     cognitoUsername,
     authState,
     connectLoginByEmail,
+    connectUsername,
     toggleTheme,
     setAppMeetingInfo,
     setCognitoUser,
     setAuthState,
-    setConnectLoginByEmail
+    setConnectLoginByEmail,
+    setConnectUsername
   };
 
   return (

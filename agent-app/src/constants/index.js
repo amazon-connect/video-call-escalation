@@ -53,3 +53,7 @@ export const DevicePermissionStatus = {
   GRANTED : 'GRANTED',
   DENIED : 'DENIED',
 }
+
+export const DemoWebsitePage = 'demo-website.html'
+
+export const DeprecatedConnectDomain = 'awsapps.com'

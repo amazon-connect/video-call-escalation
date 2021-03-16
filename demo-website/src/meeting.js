@@ -94,6 +94,9 @@ export class DemoMeetingApp {
     externalUserId = null;
     emailAddress;
     region = null;
+    referenceId = null;
+    referenceIdQueryParam = null;
+    referenceEmailQueryParam = null;
 
     static MeetingAPI = cdkExports.VideoCallEscalationStack.videoCallEscalationMeetingAPI;
 
@@ -126,6 +129,9 @@ export class DemoMeetingApp {
     }
 
     initParameters() {
+        this.referenceIdQueryParam = new URL(window.location.href).searchParams.get('refId');
+        this.referenceEmailQueryParam = new URL(window.location.href).searchParams.get('refEm');
+
         document.getElementById('inputMeeting').value = uuidv4();
         document.getElementById('inputName').focus();
 
@@ -146,6 +152,16 @@ export class DemoMeetingApp {
         $("#video-wrapper").draggable({
             handle: ".video-wrapper-handle"
         });
+
+        if(this.referenceIdQueryParam){
+            window.history.replaceState(null, null, window.location.pathname)
+            document.getElementById('inputReferenceId').value = this.referenceIdQueryParam
+            if(this.referenceEmailQueryParam){
+                document.getElementById('inputEmailAddress').value = this.referenceEmailQueryParam
+            }
+            document.getElementById('content').style.display = 'flex'
+        }
+
     }
 
     initEventListeners() {
@@ -296,6 +312,23 @@ export class DemoMeetingApp {
                 document.getElementById('content').style.display = 'none';
             }
         });
+
+        const buttonExpandReference = document.getElementById('button-expand-reference');
+        buttonExpandReference.firstElementChild.nextElementSibling.style.display = 'none'
+        buttonExpandReference.addEventListener('click', _e =>{
+            const divExpandReference = document.getElementById('div-expand-reference')
+            if(divExpandReference.style.display === 'none'){
+                divExpandReference.style.display = 'block'
+                divExpandReference.classList.add('mb-3')
+                buttonExpandReference.firstElementChild.style.display = 'none'
+                buttonExpandReference.firstElementChild.nextElementSibling.style.display = 'inline'
+            }
+            else{
+                divExpandReference.style.display = 'none'
+                buttonExpandReference.firstElementChild.nextElementSibling.style.display = 'none'
+                buttonExpandReference.firstElementChild.style.display = 'inline'
+            }
+        })
     }
 
     toggleButton(button) {
@@ -332,6 +365,10 @@ export class DemoMeetingApp {
         this.analyserNodeCallback = () => { };
         Array.from(document.getElementsByClassName('flow')).map(e => (e.style.display = 'none'));
         document.getElementById(flow).style.display = 'block';
+        if (flow == 'flow-authenticate')
+        {
+            document.getElementById('header-title-authenticate').style.display = 'block'
+        }
         if (flow === 'flow-devices') {
             this.startAudioPreview();
         }
@@ -1119,7 +1156,9 @@ export class DemoMeetingApp {
         this.emailAddress = document.getElementById('inputEmailAddress').value;
         this.externalUserId = uuidv4();
 
-        this.connectProvider.startChat(this.meeting, this.name, this.externalUserId, this.emailAddress);
+        this.referenceId = document.getElementById('inputReferenceId').value;
+
+        this.connectProvider.startChat(this.meeting, this.name, this.externalUserId, this.emailAddress, this.referenceId);
 
     }
 
@@ -1159,7 +1198,7 @@ class ConnectProvider {
         });
     }
 
-    startChat(meetingTitle, attendeeName, externalUserId, attendeeEmailAddress) {
+    startChat(meetingTitle, attendeeName, externalUserId, attendeeEmailAddress, referenceId) {
         window.connect.ChatInterface.initiateChat({
             name: attendeeName,
             region: this.connectRegion,
@@ -1171,7 +1210,10 @@ class ConnectProvider {
                 'videoAttendeeExternalUserId': externalUserId,
                 'videoAttendeeName': attendeeName,
                 'videoVendorName' : 'demo-website',
-                'videoRouteToAgent' : (attendeeEmailAddress.includes('@') && attendeeEmailAddress.includes('+')? (`${(attendeeEmailAddress.split('@')[0]).replace('+', '_')}@${attendeeEmailAddress.split('@')[1]}`) : attendeeEmailAddress)
+                //videoRouteToAgent is only used for demo purposes, to always route to agent (agent's personal queue), while in regular production usage, videoRouteToAgent would not be used in the website
+                'videoRouteToAgent' : (attendeeEmailAddress.includes('@') && attendeeEmailAddress.includes('+')? (`${(attendeeEmailAddress.split('@')[0]).replace('+', '_')}@${attendeeEmailAddress.split('@')[1]}`) : attendeeEmailAddress),
+                //videoReferenceId allows customer to be connected to a specific agent - the agent would create an ad-hoc route and provide the ReferenceId to the customer (instead of using videoRouteToAgent)
+                'videoReferenceId' : referenceId
             }),
             contactFlowId: this.connectDefaultContactFlowId
         }, (chatSession) => {

@@ -62,7 +62,7 @@ lambdaRoutesMap.set('POST /join', async (req)=>{
 const getUser = async (req) => {
   const currentUser = await getUserFromJWT(req.requestContext.authorizer, req.headers.cognitoidtoken);
   if (currentUser.isValid) return currentUser;
-  throw new ErrorHandler(403, 'CCP Login Error, user not valid');
+  throw new ErrorHandler(403, 'User not valid');
 }
 
 module.exports = (route) => {

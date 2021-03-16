@@ -1,4 +1,4 @@
-// Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
 import './styled.css';
@@ -22,7 +22,8 @@ const CCP = () => {
     } = useAppConfig();
 
     const {
-        connectLoginByEmail
+        connectLoginByEmail,
+        setConnectUsername
     } = useAppState()
 
     const {
@@ -59,7 +60,7 @@ const CCP = () => {
                 if (!window.connect.core.initialized) {
                     console.info(`[VideoCallEscalation] Connect initialization started`);
                     window.connect.core.initCCP(document.querySelector('#ccpContainer'), {
-                        ccpUrl: connectInstanceURL + '/connect/ccp-v2',
+                        ccpUrl: connectInstanceURL + '/ccp-v2',
                         loginPopup: false,
                         region: connectInstanceRegion,
                         softphone: {
@@ -72,6 +73,8 @@ const CCP = () => {
                         console.info(`[VideoCallEscalation] Connect Init completed, removing hidden_iframe!`);
                         hidden_iframe_div.current.innerHTML = '';
                         setLoaded(true);
+                        const connectAgentConfiguration = agent.getConfiguration()
+                        setConnectUsername(connectAgentConfiguration.username)
                         subscribeToEvents();
                     });
 
@@ -107,7 +110,7 @@ const CCP = () => {
                 <div id="hidden_iframe_div" ref={hidden_iframe_div} style={{ visibility: 'hidden' }} />
 
                 <div id="loginFrm_div" style={{ visibility: 'hidden' }}>
-                    <form ref={loginFrm} id="loginFrm" method="POST" target="hidden_iframe" action={`${connectInstanceURL}/connect/auth/sign-in`} onSubmit={handleLogin}>
+                    <form ref={loginFrm} id="loginFrm" method="POST" target="hidden_iframe" action={`${connectInstanceURL}/auth/sign-in`} onSubmit={handleLogin}>
                         <label htmlFor="credentials">Credentials:</label>
                         <input type="text" name="credentials" id="credentials" value={credentials} onChange={(e) => { setCredentials(e.target.value) }} /><br />
                         <label htmlFor="destination">Destination:</label>

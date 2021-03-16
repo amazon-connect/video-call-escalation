@@ -12,8 +12,11 @@ import {
   useMeetingManager,
   Modal,
   ModalBody,
-  ModalHeader
+  ModalHeader,
 } from 'amazon-chime-sdk-component-library-react';
+
+import ButtonGroup from '../../components/ButtonGroup'
+import AdHocRouteModal from '../../containers/AdHocRouteModal'
 
 import { getErrorContext } from '../../providers/ErrorProvider';
 import routes from '../../constants/routes';
@@ -31,7 +34,7 @@ const MeetingForm = () => {
     setAppMeetingInfo,
     region: appRegion,
     meetingId: appMeetingId,
-    cognitoName: appCognitoName
+    cognitoName: appCognitoName,
   } = useAppState();
 
   const {
@@ -175,7 +178,12 @@ const MeetingForm = () => {
         {isLoading ? (
           <span>Loading</span>
         ) : (
-            <PrimaryButton label="Continue" onClick={handleJoinMeeting} />
+          <ButtonGroup
+            primaryButtons={[
+              <PrimaryButton key="startBtn" label="Start" onClick={handleJoinMeeting} disabled={meetingId.trim()===''}/>,
+              <AdHocRouteModal key="adhocModalBtn"/>
+            ]} 
+            />
           )}
       </Flex>
       {isError && (

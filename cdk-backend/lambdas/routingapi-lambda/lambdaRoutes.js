@@ -3,23 +3,19 @@
 
 const ErrorHandler = require('./error');
 const getUserFromJWT = require('/opt/httpapi-decode-verify-jwt');
-const connectAPI = require('./connectAPI');
+const routingAPI = require('./routingAPI');
 
 let lambdaRoutesMap = new Map()
 
 
 /**********************
- * CCP Login method *
+ * Routing methods *
  **********************/
-lambdaRoutesMap.set('POST /ccplogin', async (req)=>{
+lambdaRoutesMap.set('POST /adhoc', async (req)=>{
     const currentUser = await getUser(req)
-
-    //Amazon Connect doesn't support + in username, replacing it with _
-    const connectUsername = req.body['connectLoginByEmail'] === true ? (`${(currentUser.email.split('@')[0]).replace('+', '_')}@${currentUser.email.split('@')[1]}`) : currentUser.username
-
-    const ccpLoginResult = await connectAPI.ccpLogin(connectUsername)
-    console.log(`User logged in successfully!`)
-    return {body : { success: 'User logged in successfully!', data: ccpLoginResult }}
+    const createAdHocRouteResult = await routingAPI.createAdHocRoute(currentUser.username, req.body['attendeeEmail'], req.body['routeToAgentQueue'])
+    console.log(`AdHoc route created successfully!`)
+    return {body : { success: 'AdHoc route created successfully!', data: createAdHocRouteResult }}
 })
 
 

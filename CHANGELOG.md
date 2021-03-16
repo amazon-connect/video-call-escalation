@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2021-03-16
+### Added
+ - [agent-app] - eslint and eslint-plugin-react packages added
+ - [agent-app] - videoCallEscalationRoutingAPI added to Amplify config
+ - [agent-app] - AppStateProvider - add connectUsername
+ - [agent-app] - AppConfigProvider - websiteAdHocRouteBaseURL added
+ - [agent-app] - support for ad-hoc routes added
+ - [demo-website] - eslint, eslint-parser, plugin-proposal-class-properties packages added
+ - [demo-website] - ad-hoc route support implemented
+ - [cdk-backend] - routingapi-lambda added
+ - [cdk-backend] - config.params.json - websiteAdHocRouteBaseURL parameter added
+### Changed
+ - [agent-app] - amazon-chime-sdk-component-library-react package version upgrade (1.6.1)
+ - [agent-app] - AmazonConnectProvider fix - check of contact attributes exist
+ - [agent-app] - support for new Amazon Connect domain ()
+ - [demo-website] - css update - header-title-authenticate
+ - [cdk-backend] - deploy.sh exit when build fails
+ - [cdk-frontend] - deploy.sh exit when build fails
+ - [ContactFlows] - support for ad-hoc routes added
+
 ## [1.0.2] - 2021-02-24
 ### Added
 - [utility-layer] - eslint and esbuild packages added

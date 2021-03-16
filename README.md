@@ -33,6 +33,32 @@ At the end, either agent or customer can disconnect the session, and agent would
 
 This solution demonstrates one option for enabling video communication in Contact Centre, however AWS provides APIs and SDKs, as building blocks, so that our customers can develop both agent and customer experience that is most suitable fof them.
 
+## Ad-Hoc Routes (voice to video escalation)
+
+In the above use-case, the customer was already browsing through our website, before initiating the video call, but another very common use-case is when customers simply dial a well-known contact centre phone number and get connected to one of the available agents, then at some point during the conversation, the agent might decide that, in order to help the customer, it might be better to switch their conversation to video and/or screen-sharing session.  
+
+In this scenario, we want to enable agents to quickly switch from a standard voice call to a video and/or screen-sharing session with the customer, then continue their conversation without any interruptions.
+
+For this use-case, we need a standard, either existing or a new Contact Flow for voice contacts, and a phone number ([DID or Toll Free](https://docs.aws.amazon.com/connect/latest/adminguide/contact-center-phone-number.html)) assigned to the Contact Flow. For the demo purposes, we can use one of the included [default](https://docs.aws.amazon.com/connect/latest/adminguide/contact-flow-default.html) contact flows, for instance `Sample queue customer`.  
+
+The customer journey starts with placing an inbound call to Amazon Connect phone number, and getting into a queue, after a welcome message, then waiting for an available agent. Once the incoming call is accepted on the agent side, the agent would start a regular conversation with the customer, and at some point, offer them to upgrade their conversation into a video and/or screen-sharing session.  
+
+To start the transition process from voice to video, the agent clicks on `Create Ad-Hoc` button, to create an ad-hoc route (also known as routing reference, or just reference) for the customer. In the pop-up dialog, agent provides customer's email address and clicks on the `Create` button. This operation creates the route and displays the route ID (reference ID) on the agent screen, as well as link (URL) with the reference included, which customer could use to easily initiate the video call with a single click.
+
+At this point, agent can either read (dictate) the reference (8 digits) number to the customer, as they are already on the voice call, or click on the customer's email address to open the default email editor on agent's computer, and send the link via email. This experience could be further extended to enable agent to send a text message, by integrating with Amazon Simple Notification Service, which is currently not part of the solution.  
+
+The agent would then guide the customer to open the webpage, if not already on it, and enter the reference number, together with their name and email address.  
+In case agent has sent the link (URL) via email, customer could simply click on the link, provide their name, and instantly initiate the video call.
+
+The provided reference number is then validated, in combination with customer's email address, and in case the provided reference was valid, the customer would be routed to agent's personal queue, with `Priority 1`, which is the top priority. This routing strategy ensures that customer is routed straight to the agent, since the default priority for regular new contacts is 5.  
+The reference is valid for 15 minutes (configurable), from the moment it was created by the agent, and immediately marked as `used` as soon as customer use it to start the contact.  
+
+To deliver the contact to the agent, we still use chat channel, preserving all the benefits of having the text-based communication alongside video and/or screen-share, such as the ability to send an email address, web links to other parts of the website, or Terms and Conditions, share documents, as well as enabling agents to help customers with their device settings for video session.  
+
+As soon as customer has been placed in agent's personal queue, with the top priority, the agent can advise customer that the original voice call would be terminated, in favour of the incoming chat contact. Agent then clicks on the `End Call` button on their CCP, and the chat contact is instantly delivered to the agent application.  
+
+From this point, the agent would take the same steps as described previously: click on the `Start` button to start the video and/or screen-sharing session, and ask the customer to click on the `Join` button on their side. Customer and agent can turn on their cameras, and/or share their screens, once they are comfortable to do that.
+
 ## Solution components
 
 On a high-level, the solution consists of 4 components, each contained in a separate folder:
@@ -101,6 +127,7 @@ This step assumes you have completed all the prerequisites, and you have an exis
         - cognito-domain-prefix: Amazon Cognito hosted UI domain, where users will be redirected during the login process. The domain prefix has to be unique.
         - agent-api-allowed-origins: Allowed Origins for agent-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
         - website-api-allowed-origins: Allowed Origins for (demo-)website-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
+        - website-ad-hoc-route-base-url: Base URL for ad-hoc routes, for demo purposes, agent-app and demo-website have the same host (CloudFront), hence you can leave this parameter empty.
         - cognito-saml-enabled: as a starting point, set this parameter to `false`
     - The script stores the deployment parameters to AWS System Manager Parameter Store
 
@@ -162,7 +189,7 @@ This step assumes you have completed all the prerequisites, and you have an exis
     - Once customer is in queue, set your agent to Available state
     - Accept the incoming Chat contact
     - Exchange a couple of messages between agent and customer (i.e. asking customer about upgrading to video call)
-    - On the agent side, in the Join Meeting form, click Continue
+    - On the agent side, in the Join Meeting form, click Start
     - This would trigger a device selection form, on both Agent and Customer side
     - Join the meeting on the agent side
     - Join the meeting on the customer side
@@ -254,12 +281,16 @@ Please follow these steps to enable AWS SSO for your deployment:
     - Run `./deploy.sh -b`
     - Wait for build and deploy to complete
 
-1. Test your configuration by logging in into your AWS SSO User Portal and clicking on the *diagrams/vce* application icon
+1. Test your configuration by logging in into your AWS SSO User Portal and clicking on the *VideoCallEscalation* application icon
 
 
 ## Detailed Video Call sequence
 
 ![Screenshot](diagrams/vceVideoCallSequence.jpg)
+
+## Detailed Ad-Hoc Route sequence
+
+![Screenshot](diagrams/vceAdHocRouteSequence.jpg)
 
 ## Clean up
 

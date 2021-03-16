@@ -47,6 +47,11 @@ const amplifyAPIConfig = {
       name: 'videoCallEscalationChimeAPI',
       endpoint: cdkExports.VideoCallEscalationStack.videoCallEscalationChimeAPI.replace(/\/$/, ""),
       region: amplifyAuthConfig.region
+    },
+    {
+      name: 'videoCallEscalationRoutingAPI',
+      endpoint: cdkExports.VideoCallEscalationStack.videoCallEscalationRoutingAPI.replace(/\/$/, ""),
+      region: amplifyAuthConfig.region
     }
   ]
 }

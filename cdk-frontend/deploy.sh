@@ -32,22 +32,35 @@ do
     esac
 done
 
+npm_run_build(){
+
+    echo ""
+    echo "build ${1}"
+    echo ""
+
+    npm run build
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "${1} build successful"
+        echo ""
+    else
+        echo ""
+        echo "${1} build failed"
+        echo ""
+        exit 1
+    fi
+}
+
 if [ "$run_build" = true ]; then
-    echo ""
-    echo "build agent-app"
-    echo ""
     cd ../agent-app
-    npm run build
-    echo ""
-    echo "build demo-website"
-    echo ""
+    npm_run_build "agent-app"
+
     cd ../demo-website
-    npm run build
-    echo ""
-    echo "build completed"
-    echo ""
+    npm_run_build "demo-website"
+
     cd ../cdk-frontend
 fi
+
 echo ""
 echo "Deploying cdk-frontend"
 echo ""

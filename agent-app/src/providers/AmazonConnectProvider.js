@@ -86,9 +86,9 @@ export function AmazonConnectProvider({children}) {
     const processContactAttributes = (contact) => {
         const contactAttributes = contact.getAttributes();
         console.info(`[VideoCallEscalation] AmazonConnectProvider >> ContactAttributes >> `, contactAttributes)
-        setMeetingTitle(contactAttributes['videoMeetingTitle'].value || '');
-        setAttendeeExternalUserId(contactAttributes['videoAttendeeExternalUserId'].value || '');
-        setAttendeeName(contactAttributes['videoAttendeeName'].value || '');
+        setMeetingTitle(contactAttributes['videoMeetingTitle']?.value || '');
+        setAttendeeExternalUserId(contactAttributes['videoAttendeeExternalUserId']?.value || '');
+        setAttendeeName(contactAttributes['videoAttendeeName']?.value || '');
     }
 
     const sendChatMessage = (message) => {
