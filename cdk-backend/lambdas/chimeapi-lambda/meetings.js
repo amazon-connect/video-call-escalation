@@ -27,30 +27,35 @@ exports.createMeeting = async (meetingTitle, meetingRegion, meetingOwnerUsername
     });
     if (meetingInfo) throw new ErrorHandler(409, 'Meeting title already exists');
 
+
+    //create meeting and add attendee to the newly created meeting
+
     const request = {
         ExternalMeetingId: meetingTitle,
         ClientRequestToken: uuid(),
-        MediaRegion: meetingRegion || 'us-east-1'
+        MediaRegion: meetingRegion || 'us-east-1',
+        Attendees: [
+            {
+                ExternalUserId: attendeeExternalUserId || uuid()
+            }
+        ]
     };
     console.info('Creating new meeting: ', request);
-    meetingInfo = await Chime.createMeeting(request).promise().catch(error => {
+    meetingInfo = await Chime.createMeetingWithAttendees(request).promise().catch(error => {
         console.error('Chime.createMeeting: ', error);
         throw new ErrorHandler(500, 'Create Meeting Error, please try again later');
     });
+    if(meetingInfo.Errors?.length > 0){
+        console.error('Chime.createMeeting - Failed to create attendee: ', meetingInfo)
+        throw new ErrorHandler(500, 'Create Meeting Error, please try again later');
+    }
+
     await persistance.putMeetingInDDB(meetingTitle, meetingOwnerUsername, attendeeName, meetingInfo).catch(error => {
         console.error('putMeetingInDDB: ', error);
         throw new ErrorHandler(500, 'Create Meeting Error, please try again later');
     });
-
-    //add attendee to the newly created meeting
-    const attendeeInfo = (await Chime.createAttendee({
-        MeetingId: meetingInfo.Meeting.MeetingId,
-        ExternalUserId: attendeeExternalUserId || uuid()
-    }).promise().catch(error => {
-        console.error('Chime.createAttendee: ', error);
-        throw new ErrorHandler(500, 'Create Attendee Error, please try again later');
-    }));
-
+    
+    const attendeeInfo = {Attendee : meetingInfo.Attendees[0]} 
     await persistance.putAttendeeInDDB(meetingTitle, attendeeInfo.Attendee.ExternalUserId, attendeeName, attendeeInfo).catch(error => {
         console.error('putAttendeeInDDB: ', error);
         throw new ErrorHandler(500, 'Create Attendee Error, please try again later');

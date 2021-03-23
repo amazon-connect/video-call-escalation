@@ -291,7 +291,7 @@ export class CdkBackendStack extends cdk.Stack {
       statements: [
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
-          actions: ['chime:CreateMeeting', 'chime:DeleteMeeting', 'chime:CreateAttendee'],
+          actions: ['chime:CreateMeeting', 'chime:CreateMeetingWithAttendees', 'chime:DeleteMeeting', 'chime:CreateAttendee'],
           resources: ['*']
         })
       ]
