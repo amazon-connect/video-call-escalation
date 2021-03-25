@@ -10,8 +10,8 @@ module.exports = {
             new HtmlWebpackPlugin({
                 template: __dirname + `/src/index.html`,
                 filename: __dirname + `/build/demo-website.html`,
-                inlineSource: '.(css)$',
-                inject: 'head'
+                inject: 'head',
+                scriptLoading: 'blocking'
             })
         ],
         entry: [path.resolve(__dirname, 'src') + '/meeting.js'],
@@ -23,19 +23,14 @@ module.exports = {
             rules: [
                 {
                     test: /\.(png|jpg|gif)$/i,
-                    use: [
-                        {
-                            loader: 'url-loader',
-                            options: {
-                                limit: 81920,
-                                name: 'demo-[name].[ext]'
-                            },
-                        },
-                    ]
+                    type: 'asset/resource',
+                    generator: {
+                        filename: 'demo-[name][ext]'
+                    }
                 },
                 {
                     test: /\.(svg)$/,
-                    loader: 'raw-loader',
+                    type: 'asset/source'
                 },
                 {
                     test: /\.(scss)$/,
@@ -50,8 +45,8 @@ module.exports = {
                         {
                             loader: 'postcss-loader',
                             options: {
-                                plugins: function () {
-                                    return [require('precss'), require('autoprefixer')]
+                                postcssOptions: {
+                                    plugins: ['precss','autoprefixer']
                                 }
                             }
                         },
