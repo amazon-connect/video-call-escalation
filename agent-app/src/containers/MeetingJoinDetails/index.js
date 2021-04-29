@@ -22,7 +22,7 @@ const MeetingJoinDetails = () => {
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { meetingId, localUserName } = useAppState();
+  const { externalMeetingId, attendeeName } = useAppState();
 
   const handleJoinMeeting = async () => {
     setIsLoading(true);
@@ -30,7 +30,7 @@ const MeetingJoinDetails = () => {
     try {
       await meetingManager.start();
       setIsLoading(false);
-      history.replace(`${routes.MEETING}/${meetingId}`);
+      history.replace(`${routes.MEETING}/${externalMeetingId}`);
     } catch (error) {
       setIsLoading(false);
       setError(error.message);
@@ -45,12 +45,12 @@ const MeetingJoinDetails = () => {
           onClick={handleJoinMeeting}
         />
         <Label style={{ margin: '.75rem 0 0 0' }}>
-          Joining meeting <b>{meetingId}</b> as <b>{localUserName}</b>
+          Joining meeting <b>{externalMeetingId}</b> as <b>{attendeeName}</b>
         </Label>
       </Flex>
       {error && (
         <Modal size="md" onClose={() => setError('')}>
-          <ModalHeader title={`Meeting ID: ${meetingId}`} />
+          <ModalHeader title={`Meeting ID: ${externalMeetingId}`} />
           <ModalBody>
             <Card
               title="Unable to join meeting"

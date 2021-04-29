@@ -14,17 +14,15 @@ export function useAmazonConnectProvider() {
     return state;
 }
 
-export function AmazonConnectProvider({children}) {
+export function AmazonConnectProvider({ children }) {
 
     const [contactId, setContactId] = useState(null);
     const [agentChatSession, setAgentChatSession] = useState(null);
     const [contactState, setContactState] = useState(null);
-    const [meetingTitle, setMeetingTitle] = useState('');
+    const [externalMeetingId, setExternalMeetingId] = useState('');
     const [attendeeName, setAttendeeName] = useState('');
+    const [attendeeEmail, setAttendeeEmail] = useState('');
     const [attendeeExternalUserId, setAttendeeExternalUserId] = useState('');
-    
-
-
 
     const subscribeToEvents = () => {
         const connect = window.connect;
@@ -78,7 +76,7 @@ export function AmazonConnectProvider({children}) {
                 })
             })
         }
-        else{
+        else {
             setTimeout(() => { subscribeToEvents(); }, 3000);
         }
     }
@@ -86,9 +84,10 @@ export function AmazonConnectProvider({children}) {
     const processContactAttributes = (contact) => {
         const contactAttributes = contact.getAttributes();
         console.info(`[VideoCallEscalation] AmazonConnectProvider >> ContactAttributes >> `, contactAttributes)
-        setMeetingTitle(contactAttributes['videoMeetingTitle']?.value || '');
+        setExternalMeetingId(contactAttributes['videoExternalMeetingId']?.value || '');
         setAttendeeExternalUserId(contactAttributes['videoAttendeeExternalUserId']?.value || '');
         setAttendeeName(contactAttributes['videoAttendeeName']?.value || '');
+        setAttendeeEmail(contactAttributes['videoAttendeeEmail']?.value || '')
     }
 
     const sendChatMessage = (message) => {
@@ -96,16 +95,17 @@ export function AmazonConnectProvider({children}) {
     }
 
     const clearState = () => {
-        try{
+        try {
             setAgentChatSession(null);
-            setMeetingTitle('');
+            setExternalMeetingId('');
             setAttendeeName('');
+            setAttendeeEmail('');
             setAttendeeExternalUserId('');
         }
-        catch(error){
-            console.error(`[VideoCallEscalation] AmazonConnectProvider`,error);
+        catch (error) {
+            console.error(`[VideoCallEscalation] AmazonConnectProvider`, error);
         }
-        
+
     }
 
 
@@ -113,8 +113,9 @@ export function AmazonConnectProvider({children}) {
         contactId,
         agentChatSession,
         contactState,
-        meetingTitle,
+        externalMeetingId,
         attendeeName,
+        attendeeEmail,
         attendeeExternalUserId,
         subscribeToEvents,
         sendChatMessage

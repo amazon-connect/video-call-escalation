@@ -7,17 +7,17 @@ import { Auth } from '@aws-amplify/auth';
 export const ccpLogin = async (connectLoginByEmail) => {
     //get current Cognito ID Token
     let cid = (await Auth.currentSession()).getIdToken().getJwtToken();
-    const response = await RestAPI.post('videoCallEscalationConnectAPI', '/ccplogin', {
+    const response = await RestAPI.post('connectAPI', '/ccplogin', {
         headers: {
             cognitoIdToken: cid
         },
         body: {
-            "connectLoginByEmail" : connectLoginByEmail
+            "connectLoginByEmail": connectLoginByEmail
         }
     })
-    .catch(error => {
-        console.error('CCP Login >>', error.response);
-        throw new Error(`CCP Login Error >> ${error.response.data.message}`);
-    });
+        .catch(error => {
+            console.error('CCP Login >>', error.response);
+            throw new Error(`CCP Login Error >> ${error.response.data.message}`);
+        });
     return response.data;
 }

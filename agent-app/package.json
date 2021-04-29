@@ -51,7 +51,7 @@
   },
   "scripts": {
     "build": "NODE_ENV=production webpack --config=webpack.config.prod.js --mode=production",
-    "start": "NODE_ENV=development webpack serve --https --config=webpack.config.dev.js --mode=development"
+    "start": "NODE_ENV=development webpack serve --https --config=webpack.config.dev.js --mode=development --port 3000"
   },
   "author": "mcosic",
   "repository": "https://github.com/amazon-connect/video-call-escalation",

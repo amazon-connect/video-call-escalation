@@ -4,9 +4,9 @@ const commonConfig = require('./webpack.config.common')
 module.exports = merge(commonConfig, {
   mode: 'development',
   devtool: 'source-map',
-  output : { publicPath : '/'},
+  output: { publicPath: '/' },
   devServer: {
-            open: true,
-            openPage: 'demo-website.html'
-        }
+    open: true,
+    openPage: 'demo-website.html'
+  }
 })

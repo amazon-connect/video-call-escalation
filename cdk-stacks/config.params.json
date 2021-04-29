@@ -1,0 +1,136 @@
+{
+    "CdkAppName": "VideoCallEscalation",
+    "CdkBackendStack": "VideoCallEscalationBackend",
+    "CdkFrontendStack": "VideoCallEscalationFrontend",
+    "CdkPipelineStack": "VideoCallEscalationPipeline",
+    "WebAppRootPrefix": "WebAppRoot/",
+    "WebAppStagingPrefix": "WebAppStaging/",
+    "hierarchy": "/VideoCallEscalation/",
+    "parameters": [
+        {
+            "name": "connectInstanceARN",
+            "cliFormat": "connect-instance-arn",
+            "description": "Amazon Connect instance ARN that solution will use. For example: arn:aws:connect:{region}:111111111111:instance/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "required": true
+        },
+        {
+            "name": "connectInstanceURL",
+            "cliFormat": "connect-instance-url",
+            "description": "Amazon Connect instance URL that solution will use. For example: https://connect-instance-alias.awsapps.com",
+            "required": true
+        },
+        {
+            "name": "connectDefaultContactFlowId",
+            "cliFormat": "connect-default-contact-flow-id",
+            "description": "This is Amazon Connect Contact Flow Id for the Contact Flow to be started when a new Chat contact is initiated. For example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "required": true
+        },
+        {
+            "name": "cognitoDomainPrefix",
+            "cliFormat": "cognito-domain-prefix",
+            "description": "Please provide a prefix for Amazon Cognito hosted UI domain, where users will be redirected during the login process. The domain prefix has to be unique, and you could put your Amazon Connect Instance Alias to it. For example: video-call-escalation-connect-instance-alias",
+            "required": true
+        },
+        {
+            "name": "agentAPIAllowedOrigins",
+            "cliFormat": "agent-api-allowed-origins",
+            "description": "Please provide the domain of your agent application, to allow CORS. For example: https://aaaabbbbcccc.cloudfront.net",
+            "defaultValue": "*",
+            "required": true
+        },
+        {
+            "name": "websiteAPIAllowedOrigins",
+            "cliFormat": "website-api-allowed-origins",
+            "description": "Please provide the domain of your website, to allow CORS. For example: https://aaaabbbbcccc.cloudfront.net",
+            "defaultValue": "*",
+            "required": true
+        },
+        {
+            "name": "websiteAdHocRouteBaseURL",
+            "cliFormat": "website-ad-hoc-route-base-url",
+            "description": "Please provide the full URL of your website, for example: https://aaaabbbbcccc.cloudfront.net/demo-website.html . To create a link for ad-hoc route which agents can share with customers, websiteAdHocRouteBaseURL is concatenated with a generated Route Id. For demo purposes, agent-app and demo-website have the same host (CloudFront), hence you can leave this parameter empty.",
+            "required": false
+        },
+        {
+            "name": "cognitoSAMLEnabled",
+            "cliFormat": "cognito-saml-enabled",
+            "description": "If SSO/SAML is enabled, set to true, otherwise set to false",
+            "defaultValue": false,
+            "required": true,
+            "boolean": true
+        },
+        {
+            "name": "ccpLoginLambdaRoleToAssume",
+            "cliFormat": "ccpLogin-lambda-role-to-assume",
+            "description": "AWS IAM Role that will be assumed by ccpLogin Lambda when connect.GetFederationToken is invoked. This is typically needed when SSO federation is enabled, otherwise this parameter can be left empty. Please note that CDK expects this Role to already be created. For example: arn:aws:iam::111111111111:role/AmazonConnectSSO",
+            "required": true,
+            "parent": "cognitoSAMLEnabled"
+        },
+        {
+            "name": "cognitoSAMLIdentityProviderURL",
+            "cliFormat": "cognito-saml-identity-provider-url",
+            "description": "If SSO/SAML was enabled, please provide IdP Metadata URL. For example: https://portal.sso.{region}.amazonaws.com/saml/metadata/aaabbbcccdddeee",
+            "required": true,
+            "parent": "cognitoSAMLEnabled"
+        },
+        {
+            "name": "cognitoSAMLIdentityProviderName",
+            "cliFormat": "cognito-saml-identity-provider-name",
+            "description": "If SSO/SAML was enabled, please provide the Identity Provide name. For example: AWSSSO",
+            "required": true,
+            "parent": "cognitoSAMLEnabled"
+        },
+        {
+            "name": "cognitoSAMLCallbackUrls",
+            "cliFormat": "cognito-saml-callback-urls",
+            "description": "If SSO/SAML was enabled, please provide a callback URL for the Amazon Cognito authorization server to call after users are authenticated. This should be set to your application root URL. For example: https://aaaabbbbcccc.cloudfront.net",
+            "required": true,
+            "parent": "cognitoSAMLEnabled"
+        },
+        {
+            "name": "cognitoSAMLLogoutUrls",
+            "cliFormat": "cognito-saml-logout-urls",
+            "description": "If SSO/SAML was enabled, please provide a logout URL where user is to be redirected after logging out.",
+            "required": true,
+            "parent": "cognitoSAMLEnabled"
+        },
+        {
+            "name": "cdkPipelineEnabled",
+            "cliFormat": "cdk-pipeline-enabled",
+            "description": "If you want to use CDK Pipelines to deploy the solution, set to true. Otherwise, set to false",
+            "defaultValue": false,
+            "required": true,
+            "boolean": true
+        },
+        {
+            "name": "cdkPipelineRepositoryName",
+            "cliFormat": "cdk-pipeline-repository-name",
+            "description": "The name of the CodeCommit Repository",
+            "required": true,
+            "parent": "cdkPipelineEnabled"
+        },
+        {
+            "name": "cdkPipelineRepositoryBranchName",
+            "cliFormat": "cdk-pipeline-repository-branch-name",
+            "description": "The name of the CodeCommit Repository Branch",
+            "required": true,
+            "parent": "cdkPipelineEnabled"
+        },
+        {
+            "name": "cdkPipelineCreateNewRepository",
+            "cliFormat": "cdk-pipeline-create-new-repository",
+            "description": "To create a new CodeCommit Repository, set to true. Otherwise, set to false",
+            "defaultValue": true,
+            "required": true,
+            "boolean": true,
+            "parent": "cdkPipelineEnabled"
+        },
+        {
+            "name": "cdkPipelineStageName",
+            "cliFormat": "cdk-pipeline-stage-name",
+            "description": "The name of Stage in the CDK pipeline",
+            "required": true,
+            "parent": "cdkPipelineEnabled"
+        }
+    ]
+}

@@ -17,16 +17,16 @@ export function useAppState() {
 }
 
 export function AppStateProvider({ children }) {
-  const [meetingId, setMeeting] = useState('');
-  const [region, setRegion] = useState('');
-  const [localUserName, setLocalName] = useState('');
+  const [externalMeetingId, setExternalMeetingId] = useState('');
+  const [meetingRegion, setMeetingRegion] = useState('');
+  const [attendeeName, setAttendeeName] = useState('');
   const [cognitoName, setCognitoName] = useState('');
   const [cognitoUsername, setCognitoUsername] = useState('');
   const [authState, setAuthState] = useState('');
   const [connectLoginByEmail, setConnectLoginByEmail] = useState(false);
   const [connectUsername, setConnectUsername] = useState('')
-  
-  
+
+
   const [theme, setTheme] = useState(() => {
     const storedTheme = localStorage.getItem('theme');
     return storedTheme || 'light';
@@ -52,20 +52,20 @@ export function AppStateProvider({ children }) {
   }
 
   const setAppMeetingInfo = (
-    meetingId,
-    name,
-    region
+    externalMeetingId,
+    attendeeName,
+    meetingRegion
   ) => {
-    setRegion(region);
-    setMeeting(meetingId);
-    setLocalName(name);
+    setExternalMeetingId(externalMeetingId);
+    setAttendeeName(attendeeName);
+    setMeetingRegion(meetingRegion);
   };
 
   const providerValue = {
-    meetingId,
-    localUserName,
+    externalMeetingId,
+    attendeeName,
     theme,
-    region,
+    meetingRegion,
     cognitoName,
     cognitoUsername,
     authState,

@@ -13,6 +13,7 @@ import {
   Modal,
   ModalBody,
   ModalHeader,
+  Spinner,
 } from 'amazon-chime-sdk-component-library-react';
 
 import ButtonGroup from '../../components/ButtonGroup'
@@ -26,47 +27,48 @@ import RegionSelection from './RegionSelection';
 import { useAppState } from '../../providers/AppStateProvider';
 import { useAmazonConnectProvider } from '../../providers/AmazonConnectProvider';
 
-import { createMeeting, createAttendee,  createGetAttendeeCallback} from '../../apis/chimeAPI';
+import { createMeeting, createAttendee, getAttendeeNameCallback } from '../../apis/chimeAPI';
 
 const MeetingForm = () => {
   const meetingManager = useMeetingManager();
   const {
     setAppMeetingInfo,
-    region: appRegion,
-    meetingId: appMeetingId,
+    meetingRegion: appMeetingRegion,
+    externalMeetingId: appExternalMeetingId,
     cognitoName: appCognitoName,
   } = useAppState();
 
   const {
-    contactState : connectContactState,
-    meetingTitle : connectMeetingTitle,
-    attendeeName : connectAttendeeName,
-    attendeeExternalUserId : connectAttendeeExternalUserId,
-    sendChatMessage : connectSendChatMessage
+    contactState: connectContactState,
+    externalMeetingId: connectExternalMeetingId,
+    attendeeName: connectAttendeeName,
+    attendeeEmail: connectAttendeeEmail,
+    attendeeExternalUserId: connectAttendeeExternalUserId,
+    sendChatMessage: connectSendChatMessage
   } = useAmazonConnectProvider();
-  
+
 
   const [isError, setIsError] = useState(false);
-  const [meetingId, setMeetingId] = useState(appMeetingId);
-  const [meetingErr, setMeetingErr] = useState(false);
-  const [agentName, setAgentName] = useState(appCognitoName);
-  const [agentNameErr, setAgentNameErr] = useState(false);
-  const [meetingRegion, setMeetingRegion] = useState(appRegion);
+  const [externalMeetingId, setExternalMeetingId] = useState(appExternalMeetingId);
+  const [externalMeetingIdErr, setExternalMeetingIdErr] = useState(false);
+  const [attendeeName, setAttendeeName] = useState(appCognitoName);
+  const [attendeeNameErr, setAttendeeNameErr] = useState(false);
+  const [meetingRegion, setMeetingRegion] = useState(appMeetingRegion);
   const [isLoading, setIsLoading] = useState(false);
   const { errorMessage, updateErrorMessage } = useContext(getErrorContext());
   const history = useHistory();
 
-  useEffect(()=>{
-    if(connectContactState === 'connected'){
-      if(connectMeetingTitle!==''){
-        console.info(`[VideoCallEscalation] MeetingForm >> Amazon Connect meetingId: ${JSON.stringify(connectMeetingTitle)}`);
-        setMeetingId(connectMeetingTitle);
+  useEffect(() => {
+    if (connectContactState === 'connected') {
+      if (connectExternalMeetingId !== '') {
+        console.info(`[VideoCallEscalation] MeetingForm >> Amazon Connect externalMeetingId: ${JSON.stringify(connectExternalMeetingId)}`);
+        setExternalMeetingId(connectExternalMeetingId);
       }
     }
-    else{
-      setMeetingId('');
+    else {
+      setExternalMeetingId('');
     }
-  },[connectContactState, connectMeetingTitle])
+  }, [connectContactState, connectExternalMeetingId])
 
   //----------------------------------------------
 
@@ -74,26 +76,32 @@ const MeetingForm = () => {
   const handleJoinMeeting = async (e) => {
     e.preventDefault();
 
-    const id = meetingId.trim().toLocaleLowerCase();
-    const attendeeName = agentName.trim();
+    if (!attendeeName) {
+      setAttendeeNameErr(true);
+      return;
+    }
 
-    if (!id || !attendeeName) {
-      if (!attendeeName) {
-        setAgentNameErr(true);
-      }
-
-      if (!id) {
-        setMeetingErr(true);
-      }
-
+    if (!externalMeetingId) {
+      setExternalMeetingIdErr(true);
       return;
     }
 
     setIsLoading(true);
-    meetingManager.getAttendee = createGetAttendeeCallback(id);
+    meetingManager.getAttendee = getAttendeeNameCallback(externalMeetingId);
 
     try {
-      const { JoinInfo } = await createMeeting(id, meetingRegion, attendeeName);
+
+      const meetingAttendees = [];
+      const ownerAttendee = {
+        attendeeName,
+        isOwner: true
+      }
+      meetingAttendees.push(ownerAttendee);
+
+      const customerAttendee = createCustomerAttendee();
+      if (customerAttendee) meetingAttendees.push(customerAttendee);
+
+      const { JoinInfo } = await createMeeting(externalMeetingId, externalMeetingId, meetingRegion, meetingAttendees);
 
 
       await meetingManager.join({
@@ -101,12 +109,12 @@ const MeetingForm = () => {
         attendeeInfo: JoinInfo.Attendee
       });
 
-      setAppMeetingInfo(id, attendeeName, meetingRegion);
-      
-      if(connectAttendeeExternalUserId && connectAttendeeName){
-        await connectAskCustomerToJoin(id);
+      setAppMeetingInfo(externalMeetingId, attendeeName, meetingRegion);
+
+      if (connectAttendeeExternalUserId && connectAttendeeName) {
+        connectAskCustomerToJoin(externalMeetingId);
       }
-      
+
       history.replace(routes.DEVICE_SETUP);
 
     } catch (error) {
@@ -122,9 +130,17 @@ const MeetingForm = () => {
     setIsLoading(false);
   };
 
+  const createCustomerAttendee = () => {
+    if (!connectAttendeeExternalUserId || !connectAttendeeName) return null;
+    return {
+      attendeeName: connectAttendeeName,
+      attendeeEmail: connectAttendeeEmail,
+      externalUserId: connectAttendeeExternalUserId,
+    }
 
-  const connectAskCustomerToJoin = async(meetingTitle) => {
-    await createAttendee(meetingTitle, connectAttendeeExternalUserId, connectAttendeeName);
+  }
+
+  const connectAskCustomerToJoin = () => {
     let messageToSend = `Automatic reply: agent started video session`;
     connectSendChatMessage(messageToSend);
   }
@@ -137,35 +153,35 @@ const MeetingForm = () => {
       <FormField
         field={Input}
         label="Meeting Id"
-        value={meetingId}
+        value={externalMeetingId}
         // infoText="Anyone with access to the meeting ID can join"
         fieldProps={{
-          name: 'meetingId',
+          name: 'externalMeetingId',
           placeholder: 'Enter Meeting Id'
         }}
         errorText="Please enter a valid meeting ID"
-        error={meetingErr}
+        error={externalMeetingIdErr}
         onChange={(e) => {
-          setMeetingId(e.target.value);
-          if (meetingErr) {
-            setMeetingErr(false);
+          setExternalMeetingId(e.target.value.trim().toLocaleLowerCase());
+          if (externalMeetingIdErr) {
+            setExternalMeetingIdErr(false);
           }
         }}
       />
       <FormField
         field={Input}
-        label="Name"
-        value={agentName}
+        label="Your Name"
+        value={attendeeName}
         fieldProps={{
-          name: 'name',
-          placeholder: 'Agent Name'
+          name: 'attendeeName',
+          placeholder: 'Your Name'
         }}
         errorText="Please enter a valid name"
-        error={agentNameErr}
+        error={attendeeNameErr}
         onChange={(e) => {
-          setAgentName(e.target.value);
-          if (agentNameErr) {
-            setAgentNameErr(false);
+          setAttendeeName(e.target.value.trim());
+          if (attendeeNameErr) {
+            setAttendeeNameErr(false);
           }
         }}
       />
@@ -176,19 +192,21 @@ const MeetingForm = () => {
         style={{ marginTop: '2.5rem' }}
       >
         {isLoading ? (
-          <span>Loading</span>
+          <Flex layout="fill-space-centered">
+            <Spinner width="2rem" height="2rem" />
+          </Flex>
         ) : (
           <ButtonGroup
             primaryButtons={[
-              <PrimaryButton key="startBtn" label="Start" onClick={handleJoinMeeting} disabled={meetingId.trim()===''}/>,
-              <AdHocRouteModal key="adhocModalBtn"/>
-            ]} 
-            />
-          )}
+              <PrimaryButton key="startBtn" label="Start" onClick={handleJoinMeeting} disabled={externalMeetingId.trim() === ''} />,
+              <AdHocRouteModal key="adhocModalBtn" />
+            ]}
+          />
+        )}
       </Flex>
       {isError && (
         <Modal size="md" onClose={closeError}>
-          <ModalHeader title={`Meeting ID: ${meetingId}`} />
+          <ModalHeader title={`Meeting ID: ${externalMeetingId}`} />
           <ModalBody>
             <Card
               title="Unable to join meeting"

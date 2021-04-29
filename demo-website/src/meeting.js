@@ -6,7 +6,7 @@ import './amazon-connect-chat-interface.js'
 import 'bootstrap'
 const uuidv4 = require('uuid/v4')
 
-import cdkExports from '../../agent-app/src/cdk-exports.json'
+const vceConfig = window.vceConfig;
 
 import {
     AsyncScheduler,
@@ -89,16 +89,16 @@ class TestSound {
 export class DemoMeetingApp {
     showActiveSpeakerScores = true;
     activeSpeakerLayout = true;
-    meeting = null;
-    name = null;
-    externalUserId = null;
-    emailAddress;
-    region = null;
+    externalMeetingId = null;
+    attendeeName = null;
+    attendeeExternalUserId = null;
+    attendeeEmail = null;
+    meetingRegion = null;
     referenceId = null;
     referenceIdQueryParam = null;
     referenceEmailQueryParam = null;
 
-    static MeetingAPI = cdkExports.VideoCallEscalationStack.videoCallEscalationMeetingAPI;
+    static MeetingAPI = vceConfig.meetingAPI;
 
     meetingSession = null;
     audioVideo = null;
@@ -132,8 +132,8 @@ export class DemoMeetingApp {
         this.referenceIdQueryParam = new URL(window.location.href).searchParams.get('refId');
         this.referenceEmailQueryParam = new URL(window.location.href).searchParams.get('refEm');
 
-        document.getElementById('inputMeeting').value = uuidv4();
-        document.getElementById('inputName').focus();
+        document.getElementById('inputExternalMeetingId').value = uuidv4();
+        document.getElementById('inputAttendeeName').focus();
 
         document.getElementById('roster-wrapper').style.display = 'none';
         document.getElementById('end-wrapper').style.display = 'none';
@@ -153,11 +153,11 @@ export class DemoMeetingApp {
             handle: ".video-wrapper-handle"
         });
 
-        if(this.referenceIdQueryParam){
+        if (this.referenceIdQueryParam) {
             window.history.replaceState(null, null, window.location.pathname)
             document.getElementById('inputReferenceId').value = this.referenceIdQueryParam
-            if(this.referenceEmailQueryParam){
-                document.getElementById('inputEmailAddress').value = this.referenceEmailQueryParam
+            if (this.referenceEmailQueryParam) {
+                document.getElementById('inputAttendeeEmail').value = this.referenceEmailQueryParam
             }
             document.getElementById('content').style.display = 'flex'
         }
@@ -230,7 +230,7 @@ export class DemoMeetingApp {
                     document.getElementById('content').style.display = 'none';
                 } catch (error) {
                     console.error(error);
-                    document.getElementById('failed-join').innerHTML = `Meeting ID: ${this.meeting}`;
+                    document.getElementById('failed-join').innerHTML = `Meeting ID: ${this.externalMeetingId}`;
                     document.getElementById('failed-join-error').innerHTML = `Error: ${error.message}`;
                 }
             });
@@ -315,15 +315,15 @@ export class DemoMeetingApp {
 
         const buttonExpandReference = document.getElementById('button-expand-reference');
         buttonExpandReference.firstElementChild.nextElementSibling.style.display = 'none'
-        buttonExpandReference.addEventListener('click', _e =>{
+        buttonExpandReference.addEventListener('click', _e => {
             const divExpandReference = document.getElementById('div-expand-reference')
-            if(divExpandReference.style.display === 'none'){
+            if (divExpandReference.style.display === 'none') {
                 divExpandReference.style.display = 'block'
                 divExpandReference.classList.add('mb-3')
                 buttonExpandReference.firstElementChild.style.display = 'none'
                 buttonExpandReference.firstElementChild.nextElementSibling.style.display = 'inline'
             }
-            else{
+            else {
                 divExpandReference.style.display = 'none'
                 buttonExpandReference.firstElementChild.nextElementSibling.style.display = 'none'
                 buttonExpandReference.firstElementChild.style.display = 'inline'
@@ -338,7 +338,7 @@ export class DemoMeetingApp {
     }
 
     displayButtonStates() {
-        for (const button in this.buttonStates) { 
+        for (const button in this.buttonStates) {
             const element = document.getElementById(button);
             const drop = document.getElementById(`${button}-drop`);
             const on = this.buttonStates[button];
@@ -365,8 +365,7 @@ export class DemoMeetingApp {
         this.analyserNodeCallback = () => { };
         Array.from(document.getElementsByClassName('flow')).map(e => (e.style.display = 'none'));
         document.getElementById(flow).style.display = 'block';
-        if (flow == 'flow-authenticate')
-        {
+        if (flow == 'flow-authenticate') {
             document.getElementById('header-title-authenticate').style.display = 'block'
         }
         if (flow === 'flow-devices') {
@@ -424,9 +423,9 @@ export class DemoMeetingApp {
     }
 
     leave() {
-        if(this.meetingSession){
+        if (this.meetingSession) {
             this.audioVideo.stop();
-            this.roster = {};   
+            this.roster = {};
         }
     }
 
@@ -518,10 +517,9 @@ export class DemoMeetingApp {
                     }
                     if (!this.roster[attendeeId].name) {
                         this.roster[attendeeId].name = 'Loading'
-                        const response = await fetch(`${DemoMeetingApp.MeetingAPI}attendee?meetingTitle=${encodeURIComponent(this.meeting)}&attendeeExternalUserId=${encodeURIComponent(this.roster[attendeeId].externalUserId)}`);
-                        const json = await response.json();
-                        const name = json.data;
-                        this.roster[attendeeId].name = name ? name : '';
+                        const response = await fetch(`${DemoMeetingApp.MeetingAPI}attendee-name?externalMeetingId=${encodeURIComponent(this.externalMeetingId)}&attendeeExternalUserId=${encodeURIComponent(this.roster[attendeeId].externalUserId)}`);
+                        const jsonResponse = await response.json();
+                        this.roster[attendeeId].name = jsonResponse.data ? jsonResponse.data : '';
                     }
                     this.updateRoster();
                 }
@@ -1056,13 +1054,13 @@ export class DemoMeetingApp {
         }
     }
 
-    contentShareDidStart(){
+    contentShareDidStart() {
         this.log('content share started.');
-      }
+    }
 
-    contentShareDidStop(){
+    contentShareDidStop() {
         this.log('content share stopped.');
-      }
+    }
 
     connectionDidBecomePoor() {
         this.log('connection is poor');
@@ -1079,9 +1077,9 @@ export class DemoMeetingApp {
     //-------------------------------------------------
 
     submitForm = () => {
-        this.meeting = document.getElementById('inputMeeting').value;
-        this.name = document.getElementById('inputName').value;
-        this.region = document.getElementById('inputRegion').value;
+        this.externalMeetingId = document.getElementById('inputExternalMeetingId').value;
+        this.attendeeName = document.getElementById('inputAttendeeName').value;
+        this.meetingRegion = document.getElementById('inputMeetingRegion').value;
 
         new AsyncScheduler().start(
             async () => {
@@ -1089,15 +1087,15 @@ export class DemoMeetingApp {
                 try {
                     await this.authenticate();
                 } catch (error) {
-                    document.getElementById('failed-meeting').innerHTML = `Meeting ID: ${this.meeting}`;
+                    document.getElementById('failed-meeting').innerHTML = `Meeting ID: ${this.externalMeetingId}`;
                     document.getElementById('failed-meeting-error').innerHTML = error.message;
                     this.switchToFlow('flow-failed-meeting');
                     return;
                 }
 
                 document.getElementById('meeting-id').innerHTML = ``;
-                document.getElementById('info-meeting').innerHTML = this.meeting;
-                document.getElementById('info-name').innerHTML = this.name;
+                document.getElementById('info-meeting').innerHTML = this.externalMeetingId;
+                document.getElementById('info-name').innerHTML = this.attendeeName;
                 this.switchToFlow('flow-devices');
                 await this.openAudioInputFromSelection();
                 await this.openVideoInputFromSelection(document.getElementById('video-input').value, true);
@@ -1108,57 +1106,43 @@ export class DemoMeetingApp {
     };
 
 
-    async joinMeetingAPI() {
-        const response = await fetch(
-            `${DemoMeetingApp.MeetingAPI}join`,
-            {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    "meetingTitle": this.meeting,
-                    "attendeeExternalUserId": this.externalUserId
-                })
-            }
-        );
-        const json = await response.json();
-        if (json.error) {
-            throw new Error(`Server error: ${json.error}`);
+    async getAttendeeJoinDataAPI() {
+        const response = await fetch(`${DemoMeetingApp.MeetingAPI}attendee-join-data?externalMeetingId=${encodeURIComponent(this.externalMeetingId)}&attendeeExternalUserId=${encodeURIComponent(this.attendeeExternalUserId)}`);
+        const jsonResponse = await response.json();
+        if (jsonResponse.error) {
+            throw new Error(`Server error: ${jsonResponse.error}`);
         }
-        return json.data;
+        return jsonResponse.data;
     }
 
-
     async authenticate() {
-        let joinInfo = (await this.joinMeetingAPI()).JoinInfo;
+        let joinInfo = (await this.getAttendeeJoinDataAPI()).JoinInfo;
         await this.initializeMeetingSession(
             new MeetingSessionConfiguration(joinInfo.Meeting, joinInfo.Attendee)
         );
         const url = new URL(window.location.href);
-        url.searchParams.set('m', this.meeting);
-        history.replaceState({}, `${this.meeting}`, url.toString());
+        url.searchParams.set('m', this.externalMeetingId);
+        history.replaceState({}, `${this.externalMeetingId}`, url.toString());
     }
 
 
     startConnectChat = () => {
         document.getElementById('start-video-button').style.display = 'none';
-        this.name = document.getElementById('inputName').value;
+        this.attendeeName = document.getElementById('inputAttendeeName').value;
         const div = document.getElementById('connect-wrapper');
         div.style.display = 'block';
         document.getElementById('content').style.display = 'none';
-        
-        document.getElementById('inputMeeting').value = uuidv4();
 
-        this.meeting = document.getElementById('inputMeeting').value;
-        this.name = document.getElementById('inputName').value;
-        this.emailAddress = document.getElementById('inputEmailAddress').value;
-        this.externalUserId = uuidv4();
+        document.getElementById('inputExternalMeetingId').value = uuidv4();
+
+        this.externalMeetingId = document.getElementById('inputExternalMeetingId').value;
+        this.attendeeName = document.getElementById('inputAttendeeName').value;
+        this.attendeeEmail = document.getElementById('inputAttendeeEmail').value;
+        this.attendeeExternalUserId = uuidv4();
 
         this.referenceId = document.getElementById('inputReferenceId').value;
 
-        this.connectProvider.startChat(this.meeting, this.name, this.externalUserId, this.emailAddress, this.referenceId);
+        this.connectProvider.startChat(this.externalMeetingId, this.attendeeName, this.attendeeExternalUserId, this.attendeeEmail, this.referenceId);
 
     }
 
@@ -1171,9 +1155,9 @@ export class DemoMeetingApp {
 }
 
 class ConnectProvider {
-    connectRegion = cdkExports.VideoCallEscalationStack.connectInstanceARN.split(':')[3];
-    connectAPiGatewayEndpoint = `${cdkExports.VideoCallEscalationStack.videoCallEscalationChatAPI}start`;
-    connectDefaultContactFlowId = cdkExports.VideoCallEscalationStack.connectDefaultContactFlowId
+    connectRegion = vceConfig.connectInstanceARN.split(':')[3];
+    connectAPiGatewayEndpoint = `${vceConfig.chatAPI}start`;
+    connectDefaultContactFlowId = vceConfig.connectDefaultContactFlowId
 
     mainApplication = {}
 
@@ -1198,22 +1182,23 @@ class ConnectProvider {
         });
     }
 
-    startChat(meetingTitle, attendeeName, externalUserId, attendeeEmailAddress, referenceId) {
+    startChat(externalMeetingId, attendeeName, attendeeExternalUserId, attendeeEmail, referenceId) {
         window.connect.ChatInterface.initiateChat({
             name: attendeeName,
             region: this.connectRegion,
             apiGatewayEndpoint: this.connectAPiGatewayEndpoint,
             contactAttributes: JSON.stringify({
                 'customerName': attendeeName,
-                'customerEmailAddress' : attendeeEmailAddress,
-                'videoMeetingTitle': meetingTitle,
-                'videoAttendeeExternalUserId': externalUserId,
+                'customerEmailAddress': attendeeEmail,
+                'videoExternalMeetingId': externalMeetingId,
+                'videoAttendeeExternalUserId': attendeeExternalUserId,
                 'videoAttendeeName': attendeeName,
-                'videoVendorName' : 'demo-website',
+                'videoAttendeeEmail': attendeeEmail,
+                'videoVendorName': 'demo-website',
                 //videoRouteToAgent is only used for demo purposes, to always route to agent (agent's personal queue), while in regular production usage, videoRouteToAgent would not be used in the website
-                'videoRouteToAgent' : (attendeeEmailAddress.includes('@') && attendeeEmailAddress.includes('+')? (`${(attendeeEmailAddress.split('@')[0]).replace('+', '_')}@${attendeeEmailAddress.split('@')[1]}`) : attendeeEmailAddress),
+                'videoRouteToAgent': (attendeeEmail.includes('@') && attendeeEmail.includes('+') ? (`${(attendeeEmail.split('@')[0]).replace('+', '_')}@${attendeeEmail.split('@')[1]}`) : attendeeEmail),
                 //videoReferenceId allows customer to be connected to a specific agent - the agent would create an ad-hoc route and provide the ReferenceId to the customer (instead of using videoRouteToAgent)
-                'videoReferenceId' : referenceId
+                'videoReferenceId': referenceId
             }),
             contactFlowId: this.connectDefaultContactFlowId
         }, (chatSession) => {
@@ -1247,9 +1232,9 @@ class ConnectProvider {
         this.mainApplication.leave();
         buttonMeetingLeave.disabled = false;
 
-        setTimeout(() => { 
+        setTimeout(() => {
             window.location = window.location.pathname;
-          }, 2000);
+        }, 2000);
     }
 
 }

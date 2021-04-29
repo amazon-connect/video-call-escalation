@@ -12,7 +12,7 @@ export default function useEndMeetingControl() {
 
     const meetingManager = useMeetingManager();
     const history = useHistory();
-    const { meetingId } = useAppState();
+    const { externalMeetingId } = useAppState();
     const { contactState: connectContactState } = useAmazonConnectProvider();
 
     useNonInitialEffect(() => {
@@ -35,8 +35,8 @@ export default function useEndMeetingControl() {
     function endMeetingForAll() {
         meetingManager.leave().then(() => {
             try {
-                if (meetingId) {
-                    endMeeting(meetingId)
+                if (externalMeetingId) {
+                    endMeeting(externalMeetingId)
                 }
             }
             catch (e) {

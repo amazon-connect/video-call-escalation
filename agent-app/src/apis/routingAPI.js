@@ -7,7 +7,7 @@ import { Auth } from '@aws-amplify/auth';
 export const createAdHocRoute = async (attendeeEmail, routeToAgentQueue) => {
     //get current Cognito ID Token
     let cid = (await Auth.currentSession()).getIdToken().getJwtToken();
-    const response = await RestAPI.post('videoCallEscalationRoutingAPI', '/adhoc', {
+    const response = await RestAPI.post('routingAPI', '/adhoc', {
         headers: {
             cognitoIdToken: cid
         },
@@ -16,9 +16,9 @@ export const createAdHocRoute = async (attendeeEmail, routeToAgentQueue) => {
             routeToAgentQueue
         }
     })
-    .catch(error => {
-        console.error('createAdHocRoute >>', error.response);
-        throw new Error(`Create Ad-Hoc Route Error >> ${error.response.data.message}`);
-    });
+        .catch(error => {
+            console.error('createAdHocRoute >>', error.response);
+            throw new Error(`Create Ad-Hoc Route Error >> ${error.response.data.message}`);
+        });
     return response.data;
 }

@@ -65,9 +65,11 @@ On a high-level, the solution consists of 4 components, each contained in a sepa
 
 * agent-app - web based (React) agent application, including Amazon Connect StreamsAPI and Amazon Chime SDK
 * demo-website - a demo web page for customers, including Amazon Connect Chat SDK and Amazon Chime SDK
-* cdk-backend - AWS CDK stack with all the backend resources needed for the solution (AWS Lambda, Amazon API Gateway, Amazon Cognito etc)
-* cdk-frontend - AWS CDK stack with front-end resources for hosting both agent-app and demo-website (Amazon S3, Amazon CloudFront distribution)
 * ConnectContactFlows - a folder with demo Amazon Connect Contact Flows for chat routing and queueing
+* cdk-stacks - AWS CDK stacks: 
+    - `cdk-backend-stack` with all the backend resources needed for the solution (AWS Lambda, Amazon API Gateway, Amazon Cognito etc)
+    - `cdk-front-end-stack` with front-end resources for hosting both agent-app and demo-website (Amazon S3, Amazon CloudFront distribution)
+
 
 Solution architecture:  
 ![Screenshot](diagrams/vceSolutionArchitecture.jpg)
@@ -82,6 +84,7 @@ Solution architecture:
 
 ## Solution setup
 
+You can deploy the solution using AWS CDK CLI, but also using AWS CDK Pipelines (please check [Deploying with AWS CDK Pipelines](/cdk-stacks/README.md#Deploying-with-AWS-CDK-Pipelines)).
 This step assumes you have completed all the prerequisites, and you have an existing Amazon Connect instance, SSO/SAML enabled.
 
 1. Clone the solution to your computer (using `git clone`)
@@ -105,43 +108,40 @@ This step assumes you have completed all the prerequisites, and you have an exis
     - you can also use profiles (i.e. `export AWS_PROFILE=yourProfile`)
     - you can confirm the configured region with  
      `aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]'`
-    - In case you started with a new environment, please bootstrap CDK:  
-    `cdk bootstrap aws://yourAccountNumber/yourDesiredRegion`
 
 1. Install NPM packages 
-    - Open your Terminal and navigate to the root of solution (`video-call-escalation`)
-    - Run `./install.sh`
-    - This script goes through all folders of the solution and installs necessary packages
+    - Open your Terminal and navigate to `video-call-escalation/cdk-stacks`
+    - Run `npm run install:all`
+    - This script goes through all packages of the solution and installs necessary modules (agent-app, demo-website, cdk-stacks, lambdas)
 
-1. Configure CDK-Backend stack
-    - In your terminal, navigate to `video-call-escalation/cdk-backend`
+1. Configure CDK stacks
+    - In your terminal, navigate to `video-call-escalation/cdk-stacks`
     - To see the full instructions for the configuration script, run  
     `node configure.js -h`
     - For the purpose of this guide, start the configuration script in interactive mode   
     `node configure.js -i`
     - (You can configure it via single command, by directly providing parameters, as described in the script help instructions)
     - When prompted, provide the following parameters:
-        - connect-instance-arn: Amazon Connect instance ARN that solution will use.
-        - connect-instance-url: Amazon Connect instance URL that solution will use
-        - connect-default-contact-flow-id: Amazon Connect Contact Flow Id for the Contact Flow to be started when a new Chat contact is initiated (VideoCallEscalationChat Flow Id)
-        - cognito-domain-prefix: Amazon Cognito hosted UI domain, where users will be redirected during the login process. The domain prefix has to be unique.
-        - agent-api-allowed-origins: Allowed Origins for agent-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
-        - website-api-allowed-origins: Allowed Origins for (demo-)website-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
-        - website-ad-hoc-route-base-url: Base URL for ad-hoc routes, for demo purposes, agent-app and demo-website have the same host (CloudFront), hence you can leave this parameter empty.
-        - cognito-saml-enabled: as a starting point, set this parameter to `false`
+        - `connect-instance-arn`: Amazon Connect instance ARN that solution will use.
+        - `connect-instance-url`: Amazon Connect instance URL that solution will use
+        - `connect-default-contact-flow-id`: Amazon Connect Contact Flow Id for the Contact Flow to be started when a new Chat contact is initiated (VideoCallEscalationChat Flow Id)
+        - `cognito-domain-prefix`: Amazon Cognito hosted UI domain, where users will be redirected during the login process. The domain prefix has to be unique.
+        - `agent-api-allowed-origins`: Allowed Origins for agent-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
+        - `website-api-allowed-origins`: Allowed Origins for (demo-)website-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
+        - `website-ad-hoc-route-base-url`: Base URL for ad-hoc routes, for demo purposes, agent-app and demo-website have the same host (CloudFront), hence you can leave this parameter empty.
+        - `cognito-saml-enabled`: as a starting point, set this parameter to `false`
+        - `cdk-pipeline-enabled`: for CLI based deployment, set this parameter to `false`
     - The script stores the deployment parameters to AWS System Manager Parameter Store
 
-1. Deploy CDK-Backend
-    - In your terminal, navigate to `video-call-escalation/cdk-backend`
-    - Run the deploy script: `./deploy.sh`
+1. Deploy CDK stacks
+    - In your terminal, navigate to `video-call-escalation/cdk-stacks`
+    - Run the script: `npm run build:frontend`
+    - This script builds frontend applications (agent-app, demo-website)
+    - In case you started with a new environment, please bootstrap CDK: `cdk bootstrap`
+    - Run the script: `npm run cdk:deploy`
+    - This script deploys CDK stacks
     - Wait for all resources to be provisioned before continuing to the next step
-    - AWS CDK output will be provided in your Terminal
-
-1. Deploy CDK-Frontend
-    - In your Terminal, navigate to `video-call-escalation/cdk-frontend`
-    - To automatically build both agent-app and demo-website, and deploy the stack, run:  
-    `./deploy.sh -b`
-    - Once completed, Amazon CloudFront Distribution URL will be displayed
+    - AWS CDK output will be provided in your Terminal (Amazon Cognito User Pool Id, Amazon CloudFront Distribution URL)
 
 1. Configure Amazon Connect Approved Origins
     - Login into your AWS Console
@@ -151,7 +151,7 @@ This step assumes you have completed all the prerequisites, and you have an exis
 
 1. Configure API Allowed Origins (optional)
     - Cross-origin resource sharing (CORS) is a browser security feature that restricts cross-origin HTTP requests that are initiated from scripts running in the browser. At this point, we can restrict our APIs to be accessible only from our Amazon CloudFront Distribution domain (origin).
-    - In your terminal, navigate to `video-call-escalation/cdk-backend`
+    - In your terminal, navigate to `video-call-escalation/cdk-stacks`
     - Start the configuration script in interactive mode, with additional -l (`load`) parameter  
     `node configure.js -i -l`
     - The script loads all the existing parameters, and prompts for new parameters to be provided
@@ -160,11 +160,11 @@ This step assumes you have completed all the prerequisites, and you have an exis
         - website-api-allowed-origins: Domain of your (demo-)website application, in this case Amazon CloudFront Distribution URL. For instance: `https://aaaabbbbcccc.cloudfront.net`
     - For the demo purpose, both agent-app and demo-website are hosted at the same Amazon CloudFront Distribution, but these would, most probably, be different in your production environment. 
     - The script stores the deployment parameters to AWS System Manager Parameter Store
-    - While in `video-call-escalation/cdk-backend`, run the deploy script: `./deploy.sh`
-    - Wait for the CDK-backend stack to be updated
+    - While in `video-call-escalation/cdk-stacks`, run the deploy script: `npm run cdk:deploy`
+    - Wait for the CDK stacks to be updated
 
 1. Create a test agent (user)
-    - To create an Amazon Cognito user, you'll need Cognito User Pool Id (created in step 6 - check for the AWS CDK Output, or check it in your AWS Console > Cognito User Pools)
+    - To create an Amazon Cognito user, you'll need Cognito User Pool Id (created in step 5 - check for the AWS CDK Output, or check it in your AWS Console > Cognito User Pools)
     - Create an Amazon Cognito user by executing:  
     `aws cognito-idp admin-create-user --region yourDesiredRegion --user-pool-id yourUserPoolId  --username yourEmailAddress --user-attributes Name=name,Value=YourName`
     - You will receive an email, with a temporary password, which you will need in the next step
@@ -242,11 +242,11 @@ Please follow these steps to enable AWS SSO for your deployment:
     - On the top of the page, select *Assigned users* tab and click *Assign users*
     - Select the Users and/or Groups that would have access to the application, and click *Assign users*
 
-1. Configure an AWS IAM Role for ConnectAPILambda
+1. Configure an AWS IAM Role for ccpLoginLambda
     - This step is required in case your Amazon Connect users already use AWS SSO (or any other IdP) to login. As noted in the official *Configure SAML with IAM for Amazon Connect* documentation **Replacing this (*federation*) role causes previously federated users to fail at federation because it breaks existing user logins.** Therefore, to avoid the effort of re-creating all the existing users, we need to use the already existing federation role in our configuration. 
     - Login into your AWS Console 
-    - For the next step, we need ConnectAPILambda role name, that was previously created by AWS CDK-Backend stack
-    - Navigate to AWS Lambda -> select *ConnectAPILambda* -> select *Permissions* tab -> copy the *Execution role name*
+    - For the next step, we need ccpLoginLambda role name, that was previously created by AWS CDK-Backend stack
+    - Navigate to AWS Lambda -> select *ccpLoginLambda* -> select *Permissions* tab -> copy the *Execution role name*
     - Navigate to AWS IAM -> Roles
     - Find your existing federation role (for instance `AmazonConnectSSO`)
     - Click on the *Trust relationships* tab and then click *Edit trust relationship*
@@ -257,28 +257,28 @@ Please follow these steps to enable AWS SSO for your deployment:
         "Effect": "Allow",
         "Action": "sts:AssumeRole",
         "Principal": {
-            "AWS": "arn:aws:iam::{yourAccount}:role/{yourConnectAPILambdaRoleName}"
+            "AWS": "arn:aws:iam::{yourAccount}:role/{yourCcpLoginLambdaRoleName}"
         }
     }
     ```  
-    - This new statement Allow our ConnectAPILambda to Assume the existing role, so existing Amazon Connect users could continue to login seamlessly
+    - This new statement Allow our ccpLoginLambda to Assume the existing role, so existing Amazon Connect users could continue to login seamlessly
     - Please note the ARN of this existing role, as we are going to need it in the next step
 
-1. Configure AWS CDK-Backend Stack
-    - In your Terminal, navigate to `video-call-escalation/cdk-backend`
+1. Configure AWS CDK Stacks
+    - In your Terminal, navigate to `video-call-escalation/cdk-stack`
     - Start the configuration script in interactive mode, with additional -l (load) parameter  
     `node configure.js -i -l`
     - Accept all the existing parameters, but to enable SSO:
     - Set cognito-saml-enabled parameter to `true`
     - Set the following SSO related parameters:
-        - connectapi-lambda-role-to-assume: AWS IAM Role that will be assumed by ConnectAPI Lambda when connect.GetFederationToken is invoked. Set your existing AWS IAM role from the previous step (for example `arn:aws:iam::111111111111:role/AmazonConnectSSO`)
-        - cognito-saml-identity-provider-url: *AWS SSO metadata file* URL that we copied before (for example `https://portal.sso.{region}.amazonaws.com/saml/metadata/aaabbbcccdddeee`)
-        - cognito-saml-identity-provider-name: set the provider name, for example `AWSSSO`
-        - cognito-saml-callback-urls: set as `https://{Amazon CloudFront Distribution URL}` (for example `https://aaaabbbbcccc.cloudfront.net`)
-        - cognito-saml-logout-urls: set as `https://{Amazon CloudFront Distribution URL}/?logout` (for example `https://aaaabbbbcccc.cloudfront.net/?logout`)
+        - `ccpLogin-lambda-role-to-assume`: AWS IAM Role that will be assumed by ccpLoginLambda when connect.GetFederationToken is invoked. Set your existing AWS IAM role from the previous step (for example `arn:aws:iam::111111111111:role/AmazonConnectSSO`)
+        - `cognito-saml-identity-provider-url`: *AWS SSO metadata file* URL that we copied before (for example `https://portal.sso.{region}.amazonaws.com/saml/metadata/aaabbbcccdddeee`)
+        - `cognito-saml-identity-provider-name`: set the provider name, for example `AWSSSO`
+        - `cognito-saml-callback-urls`: set as `https://{Amazon CloudFront Distribution URL}` (for example `https://aaaabbbbcccc.cloudfront.net`)
+        - `cognito-saml-logout-urls`: set as `https://{Amazon CloudFront Distribution URL}/?logout` (for example `https://aaaabbbbcccc.cloudfront.net/?logout`)
     - The script stores updated deployment parameters to AWS System Manager Parameter Store
-    - In your Terminal, navigate to `video-call-escalation/cdk-frontend`
-    - Run `./deploy.sh -b`
+    - In your Terminal, navigate to `video-call-escalation/cdk-stacks`
+    - Run script `npm run cdk:deploy`
     - Wait for build and deploy to complete
 
 1. Test your configuration by logging in into your AWS SSO User Portal and clicking on the *VideoCallEscalation* application icon
@@ -296,16 +296,12 @@ Please follow these steps to enable AWS SSO for your deployment:
 
 To remove the solution from your account, please follow these steps:
 
-1. Remove CDK-Frontend
-    - In your Terminal, navigate to `video-call-escalation/cdk-frontend`
-    - Run `cdk destroy`
+1. Remove CDK Stacks
+    - In your Terminal, navigate to `video-call-escalation/cdk-stacks`
+    - Run `cdk destroy --all`
 
-2. Remove CDK-Backend
-    - In your Terminal, navigate to `video-call-escalation/cdk-backend`
-    - Run `cdk destroy`
-
-3. Remove deployment parameters from AWS System Manager Parameter Store
-    - In your Terminal, navigate to `video-call-escalation/cdk-backend`
+1. Remove deployment parameters from AWS System Manager Parameter Store
+    - In your Terminal, navigate to `video-call-escalation/cdk-stacks`
     - Run `node configure.js -d`
 
 

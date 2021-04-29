@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+#ignore frontend-config.js, as it's downloaded from S3
+frontend-config.js
+
 # testing
 /coverage
 

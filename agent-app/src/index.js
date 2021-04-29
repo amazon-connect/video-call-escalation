@@ -7,26 +7,27 @@ import './index.css';
 import App from './App';
 
 import Amplify from '@aws-amplify/core'
-import cdkExports from './cdk-exports.json'
 
 import { AppStateProvider } from './providers/AppStateProvider'
 import { AppConfigProvider } from './providers/AppConfigProvider';
 
-const isFederateLogin = window.location.search==='?federate'?true:false
-const isFederateLogout = window.location.search==='?logout'?true:false
+const isFederateLogin = window.location.search === '?federate' ? true : false
+const isFederateLogout = window.location.search === '?logout' ? true : false
+
+const vceConfig = window.vceConfig;
 
 //Configure Amplify - using CDK outputs
 const amplifyAuthConfig = {
-  identityPoolId: cdkExports.VideoCallEscalationStack.identityPoolId,
-  userPoolId: cdkExports.VideoCallEscalationStack.userPoolId,
-  userPoolWebClientId: cdkExports.VideoCallEscalationStack.userPoolWebClientId,
-  region: cdkExports.VideoCallEscalationStack.backendRegion
+  identityPoolId: vceConfig.identityPoolId,
+  userPoolId: vceConfig.userPoolId,
+  userPoolWebClientId: vceConfig.userPoolWebClientId,
+  region: vceConfig.backendRegion
 }
 
 //federation
-if(cdkExports.VideoCallEscalationStack.cognitoSAMLEnabled === "true"){
+if (vceConfig.cognitoSAMLEnabled === "true") {
   amplifyAuthConfig['oauth'] = {
-    domain: cdkExports.VideoCallEscalationStack.cognitoDomainURL.replace(/(^\w+:|^)\/\//, ''),
+    domain: vceConfig.cognitoDomainURL.replace(/(^\w+:|^)\/\//, ''),
     scope: ['email', 'openid', 'aws.cognito.signin.user.admin'],
     redirectSignIn: `${window.location.protocol}//${window.location.host}`,
     redirectSignOut: `${window.location.protocol}//${window.location.host}/?logout`,
@@ -39,18 +40,18 @@ if(cdkExports.VideoCallEscalationStack.cognitoSAMLEnabled === "true"){
 const amplifyAPIConfig = {
   endpoints: [
     {
-      name: 'videoCallEscalationConnectAPI',
-      endpoint: cdkExports.VideoCallEscalationStack.videoCallEscalationConnectAPI.replace(/\/$/, ""),
+      name: 'connectAPI',
+      endpoint: vceConfig.connectAPI.replace(/\/$/, ""),
       region: amplifyAuthConfig.region
     },
     {
-      name: 'videoCallEscalationChimeAPI',
-      endpoint: cdkExports.VideoCallEscalationStack.videoCallEscalationChimeAPI.replace(/\/$/, ""),
+      name: 'chimeAPI',
+      endpoint: vceConfig.chimeAPI.replace(/\/$/, ""),
       region: amplifyAuthConfig.region
     },
     {
-      name: 'videoCallEscalationRoutingAPI',
-      endpoint: cdkExports.VideoCallEscalationStack.videoCallEscalationRoutingAPI.replace(/\/$/, ""),
+      name: 'routingAPI',
+      endpoint: vceConfig.routingAPI.replace(/\/$/, ""),
       region: amplifyAuthConfig.region
     }
   ]
@@ -63,9 +64,9 @@ Amplify.configure({
 
 ReactDOM.render(
   <React.StrictMode>
-    <AppConfigProvider>
+    <AppConfigProvider vceConfig={vceConfig}>
       <AppStateProvider>
-        <App isFederateLogin={isFederateLogin} isFederateLogout={isFederateLogout}/>
+        <App isFederateLogin={isFederateLogin} isFederateLogout={isFederateLogout} />
       </AppStateProvider>
     </AppConfigProvider>
 
