@@ -1,0 +1,13 @@
+@media screen and (max-width:100em) {
+    figure {
+       padding-left:0;
+       padding-right:0;
+       height:auto;
+    }
+ }
+
+ #video-list video {
+    width: 600px;
+    height: 450px;
+    padding: 5px
+  }

@@ -4,6 +4,106 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2021-05-28
+The version 2.1.0 brings support for Video Call Recording, as described in [Video Call Recording](/cdk-stacks/README.md#Video-Call-Recording)
+
+### Added
+
+- [cdk-stacks/lib/cdk-backend-stack] 
+    - `RecordingStack` and `RecordingAPIStack` nested stacks added
+    - `frontendConfigStack` parameters added: `deployRecordingStack`, `recordingAttendeeName`
+    - `connectAPIStack` parameters added: `cognitoUserPoolId`, `cognitoUserPoolARN`, `appTable`
+- [cdk-stacks/lib/recording/recording-stack.js] - new stack for Video Call Recording. Resources: `recordingVPC`, `recordingECSSecurityGroup`, `recordingECSCluster`, `recordingECSAutoScalingGroup`, `recordingECSCapacityProvider`, `recordingTaskDefinition`, `recordingTaskLogGroup`, `recordingDockerImage`, `recordingBucket`, `autoscalingEC2InstanceLaunchRule`, `startRecordingPreWarmTaskLambda`
+- [cdk-stacks/lib/api/recordingAPI-stacks.ts] - new stack for Video Call Recording. Resources:  `startRecordingLambda`, `stopRecordingLambda`, `getRecordingSummaryLambda`, `recordingAPI`, `startRecording_Route`, `stopRecording_Route`, `getRecordingSummary_Route`
+- [cdk-stacks/config.params.json] - `deployRecordingStack`, `recordingPlaybackSecurityProfileId`, `recordingAttendeeName`, `recordingPresignedURLExpiresMinutes`, `CdkChimeEventBridgeStack`
+- [cdk-stacks/lib/api/connectAPI-stacks.js] - resources added:
+    - AWS Lambda functions: `putConnectUserCacheLambda`, `setConnectUserIdLambda`, 
+    - Amazon API Gateway HTTP API Routes: `setConnectUserId_Route`, `putConnectUserCache_Route`
+- [cdk-stacks/bin/cdk-stacks.js] - add `CdkChimeEventBridgeStack` and `isDeployRecordingStack` method
+- [cdk-stacks/lib/pipeline/cdk-pipeline-stacks.js]
+    - add `ec2:DescribeAvailabilityZones` to Pipeline `rolePolicyStatements`
+    - add `deployRecordingStack: ssmParams.deployRecordingStack`
+- [cdk-stacks/lib/pipeline/cdk-pipeline-stage.ts] - add `cdkChimeEventBridgeStack`
+- [cdk-stacks/docker/recording] - folder contains all the assets required for Amazon ECS Recording Task:
+    - [Dockerfile] - specifies the Docker image for Recording Task, pulled: `FROM public.ecr.aws/lts/ubuntu:18.04_stable`, and describes all the steps (install dependencies and copy operations) during the image build.
+    - [recording-app] - folder contains a web based application, with Amazon Chime SDK for JavaScript, and minimal set of UI elements to display all Amazon Chime SDK meeting participants.
+    - [recording-task] - folder contains `run.sh` and `record.js` scripts, which are started when a new Recording Task starts
+- [cdk-stacks/lambdas/handlers/RecordingAPI] - folder contains AWS Lambda handlers for Recording API
+    - [startRecording.js] - handler for `StartRecordingLambda`
+    - [stopRecording.js] - handler for `StopRecordingLambda`
+    - [getRecordingSummary.js] - handler for `GetRecordingSummaryLambda`
+    - [stopRecordingEventTarget.js] - handler for `stopRecordingEventTargetLambda`
+    - [startRecordingPreWarmTask.js] - handler for `startRecordingPreWarmTaskLambda`
+- [cdk-stacks/lambdas/handlers/ConnectAPI] - folder contains AWS Lambda handlers for Connect API, new resources added:
+    - [setConnectUserId.js] - handler for `setConnectUserIdLambda`
+    - [putConnectUserCache.js] - handler for `putConnectUserCacheLambda`
+- [cdk-stacks/lambdas/repository/RecordingRepo.js] - new functions: `putRecording`, `getRecordingsByExternalMeetingId`, `setRecordingEndedAt`
+- [cdk-stacks/lambdas/repository/AttendeeRepo.js] - new functions: `getAttendeeByExternalUserId`
+- [cdk-stacks/lambdas/repository/ConnectUserCacheRepo.js] - new functions: `putConnectUserCache`, `getConnectUserCache`
+- [cdk-stacks/lambdas/repository/Constants.js] - new Entities: `Recording` and `ConnectUserCache`
+- [cdk-stacks/lambdas/services/AttendeeService.js] - new functions: `deleteAttendee`
+- [cdk-stacks/lambdas/services/RecordingService.js] - new functions: `generateRecordingFilename`, `startRecording`, `startECSRecordingTask`, `getRecordingsInProgress`, `isFirstRecording`, `stopECSRecordingTask`, `stopRecording`, `stopRecordingEventTarget`, `getRecordingSummary`, `setVideoRecordingPlaybackURLContactAttribute`, `generateRecordingSummaryWithPreSignedURL`, `isInHierarchy`, `getContainerInstanceId`, `startRecordingPreWarmTask`
+- [cdk-stacks/lambdas/services/CognitoService.js] - new functions: `updateUserAttributes`
+- [cdk-stacks/lambdas/services/ConnectService.js] - new functions: `describeUser`, `describeUserHierarchyGroup`, `setConnectUserId`, `getConnectUserCache`, `putConnectUserCache`, `getUserHierarchyGroup`, `updateContactAttributes`
+- [cdk-stacks/lambdas/services/S3Service.js] - new functions: `generatePreSignedURL`
+- [cdk-stacks/lambdas/lib/AuthUtility.js] - returns additional attribute: `connectUserId: claim['custom:connectUserId']`
+- [cdk-stacks/lambdas/lib/CommonUtility.js] - new functions: `makeComparator`, `convertHierarchyLevelId`, `wait`
+
+- [agent-app/src/index.js]
+    - `recordingAPI` endpoint configuration added to `amplifyAPIConfig`
+    - `amplifyAuthConfig` - `profile` added to `scope`, and `responseType` changed to `code` - to support Amazon Cognito User Pool custom attributes in Id token (JWT)
+    - `InitProvider` added to support User Onboarding, as described in [User Onboarding in agent-app](/cdk-stacks/README.md#User-Onboarding-in-agent-app)
+- [agent-app/src/apis/recordingAPI.js] - new functions: `startRecording`, `stopRecording`, `getRecordingSummary`
+- [agent-app/src/apis/ConnectAPI.js] - new functions: `setConnectUserId`, `putConnectUserCache`
+- [agent-app/src/constants] - new constants:
+    - `RecordingStatus`: `NOT_STARTED`, `STARTED`, `STOPPED`, `STARTING`, `STOPPING`, `STARTING_FAILED`, `STOPPING_FAILED`, `STOPPING_UNKNOWN`, `REQUEST_REJECTED`
+    - `ConnectContactAttributes`: `videoExternalMeetingId`, `videoAttendeeExternalUserId`, `videoAttendeeName`, `videoAttendeeEmail`, `videoRecordingAutoStartEnabled`, `videoRecordingStartStopEnabled`, `videoRecordingPlaybackURL`
+- [agent-app/src/hooks/useNotificationHelper] - new functions: `notificationInformation`, `notificationError`, `notificationReject`, `displayNotification`
+- [agent-app/src/utils/NotificationUtility.js] - new functions: `infoMessage`, `errorMessage`, `rejectMessage`
+- [agent-app/src/providers/AppConfigProvider.js] - new config parameters: `deployRecordingStack`, `recordingAttendeeName`
+- [agent-app/src/constants/routes.js] - new route added: `RECORDING: '/recording'` to display `RecordingView`
+- [agent-app/src/views/Onboarding/index.js] - new view to support User Onboarding - hosting `<CCP isOnboarding={true} />`
+- [agent-app/src/providers/InitProvider.js] - new provider to support user Onboarding, with new functions: `initConnectUser`, `refreshCurrentSession`, `setConnectUserId`
+- [agent-app/src/container/CCP/index.js]
+    - `isOnboarding` prop added
+    - `initConnectUser` function from `InitProvider` added
+    - `onConnectInitialized` function added
+- [agent-app/src/App.js]
+    - `Onboarding` view added, 
+    - `RecordingView` added, hosting `RecordingPlayback` container and `RecordingPlaybackProvider`
+    - `InitProvider` added (to `setConnectUserId`)
+    - `postLoginRedirectURL` added, to support redirect to `/recording` after federated login
+    - new functions: `setPostLoginRedirectURL`, `getPostLoginRedirectURL`
+- [agent-app/src/providers/AmazonConnectProvider.js] - new function: `recordingManagerFeatures` providing `videoRecordingAutoStartEnabled`, `videoRecordingStartStopEnabled` feature parameters
+- [agent-app/src/providers/RecordingProvider/index.js] - new provider that enables Video Call Recording:
+    - Provides `RecordingManager` which helps Video Call Recording integration 
+    - Monitors meeting roster, when Video Call Recording is deployed and enabled (`recordingManager.shouldMonitorMeetingRoster()`)
+    - Triggers `RecordingManager` status update when `RECORDING` attendee joins, or leaves the meeting (`recordingManager.setRecordingAttendeePresent()`)
+    - Subscribes to Recording Status: `recordingManager.subscribeToRecordingStatus`
+    - Triggers notifications: `onRecordingManagerStatusUpdate` -> `displayNotification`
+- [agent-app/src/providers/RecordingProvider/RecordingManager.js] - Tied to RecordingProvider, responsible for starting and stopping Video Call Recording, and providing Call Recording Status updates to observers.
+    - Properties: `externalMeetingId`, `connectContactId`, `recordingStatus`, `attendeePresent`, `deployRecordingStackConfig`, `recordingAttendeeNameConfig`, `videoRecordingStartStopEnabled`, `videoRecordingAutoStartEnabled`, `recordingStatusObservers`
+    - Methods: `toggleRecordingEnabled`, `shouldMonitorMeetingRoster`, `shouldAutoStartRecording`, `initRecordingStatus`, `setRecordingFeatures`, `canStartRecording`, `canStopRecording`, `startRecording`, `stopRecording`, `toggleRecording`, `setRecordingAttendeePresent`, `recordingAttendeeJoined`, `onMeetingRecordingStarted`, `recordingAttendeeLeft`, `onMeetingRecordingStopped`, `meetingEnded`, `getMessageByRecordingStatus`, `publishAndReturn`, `subscribeToRecordingStatus`, `unsubscribeFromRecordingStatus`, `publishRecordingStatus`
+- [agent-app/src/views/VideoAgent] - `RecordingProvider` added to `VideoAgent` view
+- [agent-app/src/containers/MeetingForm/index.js] - `recordingManager` added to support Video Call Recording (`initRecordingStatus`, `setRecordingFeatures`, `shouldAutoStartRecording`, `startRecording`)
+- [agent-app/src/components/ToggleRecordingButton/index.js] - Toggle Recording button, allowing agents to Start and Stop recording
+- [agent-app/src/containers/MeetingControls/index.js] - new button added to Meeting Controls: `ToggleRecordingButton`
+- [agent-app/src/containers/RecordingPlayback] - UI container to host `RecordingPlaylist` and `RecordingPlayer` components 
+- [agent-app/src/components/RecordingPlaylist] - UI Video Playlist component, to display a list of all available call recordings based on `chimeExternalMeetingId`
+- [agent-app/src/components/RecordingPlayer] - UI Video Player component, to playback video call recordings
+- [agent-app/src/providers/RecordingPlaybackProvider] - Recording Playback Provider for `RecordingPlaylist` and `RecordingPlayer` components
+
+### Changed
+ - [cdk-stacks/lib/cdk-frontend-stack.js] - added `errorConfigurations` to support `/recording` route in React Router 
+ - [cdl-stacks/lib/infrastructure/cognito-stack.js]
+    - `customAttributes: connectUserId` added to Amazon Cognito User Pool
+    - `scopes` - `cognito.OAuthScope.PROFILE` added to enable Amazon Cognito User Pool custom attributes presence in Id token (JWT)
+ - [agent-app/src/hooks/useEndMeetingControl.js] - `recordingManager` added to Stop Call Recording, at the end of the session (`leaveMeeting -> recordingManager.meetingEnded()`, `endMeetingForAll -> recordingManager.meetingEnded()`)
+ - [agent-app/webpack.config.dev.js] - `historyApiFallback: true` to support `/recording` route in React Router 
+ - [diagrams] - updated Solution Architecture, Authentication and AuthenticationSSO, to include Onboarding process
+ - [ConnectContactFlow] - `Set contact attributes` block added, with both `videoRecordingStartStopEnabled` and `videoRecordingAutoStartEnabled` custom Contact Attributes
+
+
 ## [2.0.0] - 2021-04-28
 The version 2.0.0 brings a support for CDK Pipelines, as described in [Deploying with AWS CDK Pipelines](/cdk-stacks/README.md#Deploying-with-AWS-CDK-Pipelines), and introduces significant updates in CDK Stacks, Lambdas and DynamoDB, therefore not backward compatible with 1.x.x version. In case you already had v1.x.x deployed, it is necessary to deploy v2.0.0 as a new stack.
 

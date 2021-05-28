@@ -8,12 +8,15 @@ import { useAmazonConnectProvider } from '../providers/AmazonConnectProvider';
 import { useAppState } from '../providers/AppStateProvider';
 import routes from '../constants/routes';
 import useNonInitialEffect from '../hooks/useNonInitialEffect';
+import { useRecordingManager } from '../providers/RecordingProvider';
 export default function useEndMeetingControl() {
 
     const meetingManager = useMeetingManager();
     const history = useHistory();
     const { externalMeetingId } = useAppState();
     const { contactState: connectContactState } = useAmazonConnectProvider();
+
+    const recordingManager = useRecordingManager();
 
     useNonInitialEffect(() => {
         if (connectContactState !== '') {
@@ -27,12 +30,14 @@ export default function useEndMeetingControl() {
     }, [connectContactState]);
 
     function leaveMeeting() {
+        recordingManager.meetingEnded();
         meetingManager.leave().then(() => {
             history.replace(routes.MEETING_SETUP);
         });
     }
 
     function endMeetingForAll() {
+        recordingManager.meetingEnded();
         meetingManager.leave().then(() => {
             try {
                 if (externalMeetingId) {

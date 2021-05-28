@@ -1,0 +1,21 @@
+{
+  "name": "recording-task",
+  "version": "1.0.0",
+  "description": "Recording task application",
+  "scripts": {
+    "start": "node record.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amazon-connect/video-call-escalation.git"
+  },
+  "author": "mcosic",
+  "license": "MIT-0",
+  "bugs": {
+    "url": "https://github.com/amazon-connect/video-call-escalation/issues"
+  },
+  "homepage": "https://github.com/amazon-connect/video-call-escalation#readme",
+  "dependencies": {
+    "aws-sdk": "^2.904.0"
+  }
+}

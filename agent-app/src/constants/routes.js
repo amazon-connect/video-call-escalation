@@ -5,6 +5,7 @@ const routes = {
   MEETING_SETUP: '/',
   DEVICE_SETUP: '/devices',
   MEETING: '/meeting',
+  RECORDING: '/recording'
 };
 
 export default routes;

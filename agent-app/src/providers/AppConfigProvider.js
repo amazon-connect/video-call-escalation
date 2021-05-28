@@ -26,8 +26,16 @@ export function AppConfigProvider({ vceConfig, children }) {
     //to support existing instance that are not on my.connect.aws domain
     if (connectInstanceURL.endsWith(DeprecatedConnectDomain)) connectInstanceURL = `${connectInstanceURL}/connect`
 
+    const deployRecordingStack = getBoolParamValue(vceConfig.deployRecordingStack);
+    const recordingAttendeeName = getParamValue(vceConfig.recordingAttendeeName);
+
     const meetingManagerConfig = {
         logLevel: SDK_LOG_LEVELS.warn //TODO: Implement a parameter
+    }
+
+    const recordingManagerConfig = {
+        deployRecordingStack: deployRecordingStack,
+        recordingAttendeeName: recordingAttendeeName
     }
 
     const providerValue = {
@@ -35,9 +43,12 @@ export function AppConfigProvider({ vceConfig, children }) {
         connectInstanceARN,
         connectInstanceRegion,
         meetingManagerConfig,
+        recordingManagerConfig,
         cognitoSAMLEnabled,
         cognitoSAMLIdentityProviderName,
-        websiteAdHocRouteBaseURL
+        websiteAdHocRouteBaseURL,
+        deployRecordingStack,
+        recordingAttendeeName
     }
 
     return (

@@ -6,6 +6,7 @@ const ssmClient = new SSMClient()
 import { CdkBackendStack } from '../lib/cdk-backend-stack';
 import { CdkFrontendStack } from '../lib/cdk-frontend-stack';
 import { CdkPipelineStack } from '../lib/pipeline/cdk-pipeline-stack';
+import { CdkChimeEventBridgeStack } from '../lib/recording/cdk-chime-event-bridge-stack';
 
 const configParams = require('../config.params.json');
 
@@ -30,6 +31,20 @@ const deployWithoutPipeline = () => {
         webAppCloudFrontOAI: cdkBackendStack.webAppCloudFrontOAI
     });
     cdkFrontendStack.addDependency(cdkBackendStack);
+
+    isDeployRecordingStack().then((isDeployRecordingStack) => {
+        if (isDeployRecordingStack) {
+            const cdkChimeEventBridgeStack = new CdkChimeEventBridgeStack(app, configParams['CdkChimeEventBridgeStack'], {
+                env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' },
+                cdkBackendStackRegion: cdkBackendStack.region,
+                appTable: cdkBackendStack.appTable,
+                recordingECSClusterARN: cdkBackendStack.recordingECSClusterARN,
+                recordingECSClusterName: cdkBackendStack.recordingECSClusterName
+            });
+            cdkChimeEventBridgeStack.addDependency(cdkBackendStack);
+        }
+    });
+
 }
 
 const isCdkPipelineEnabled = async () => {
@@ -38,6 +53,14 @@ const isCdkPipelineEnabled = async () => {
         throw new Error(`Error loading SSM Parameter: [cdkPipelineEnabled]`);
     });
     return cdkPipelineEnabled.Parameter.Value.toLowerCase() === "true";
+}
+
+const isDeployRecordingStack = async () => {
+    const deployRecordingStack = await ssmClient.send(new GetParameterCommand({ Name: `${configParams.hierarchy}deployRecordingStack` })).catch((error: Error) => {
+        console.error(error);
+        throw new Error(`Error loading SSM Parameter: [deployRecordingStack]`);
+    });
+    return deployRecordingStack.Parameter.Value.toLowerCase() === "true";
 }
 
 

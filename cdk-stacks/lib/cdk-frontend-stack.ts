@@ -47,7 +47,13 @@ export class CdkFrontendStack extends cdk.Stack {
                         },
                     ]
                 }
-            ]
+            ],
+            errorConfigurations: [{
+                errorCode: 403,
+                errorCachingMinTtl: 60,
+                responsePagePath: '/index.html',
+                responseCode: 200
+            }]
         });
 
         /**************************************************************************************************************

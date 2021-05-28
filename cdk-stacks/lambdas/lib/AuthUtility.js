@@ -71,6 +71,7 @@ const getUserFromJWT = async (authorizer, cognitoIdToken) => {
         username: claim['cognito:username'],
         cognito_groups: claim['cognito:groups'],
         email: claim['email'],
+        connectUserId: claim['custom:connectUserId']
     }
 }
 

@@ -24,7 +24,8 @@ export function AppStateProvider({ children }) {
   const [cognitoUsername, setCognitoUsername] = useState('');
   const [authState, setAuthState] = useState('');
   const [connectLoginByEmail, setConnectLoginByEmail] = useState(false);
-  const [connectUsername, setConnectUsername] = useState('')
+  const [connectUsername, setConnectUsername] = useState('');
+  const [connectUserId, setConnectUserId] = useState('');
 
 
   const [theme, setTheme] = useState(() => {
@@ -71,12 +72,14 @@ export function AppStateProvider({ children }) {
     authState,
     connectLoginByEmail,
     connectUsername,
+    connectUserId,
     toggleTheme,
     setAppMeetingInfo,
     setCognitoUser,
     setAuthState,
     setConnectLoginByEmail,
-    setConnectUsername
+    setConnectUsername,
+    setConnectUserId
   };
 
   return (

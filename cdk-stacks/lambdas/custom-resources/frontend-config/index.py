@@ -47,7 +47,7 @@ def create(bucket_name, web_app_staging_object_prefix, web_app_root_object_prefi
     root_object_url = f"s3://{bucket_name}/{web_app_root_object_prefix}{object_key}"
     logger.info(f"Uploading frontend config to {root_object_url}")
     s3.upload_file(raw_file_complete, bucket_name,
-                   f"{web_app_root_object_prefix}{object_key}")
+                   f"{web_app_root_object_prefix}{object_key}", ExtraArgs={'Metadata': {'Content-Type': object_content_type}})
 
     shutil.rmtree(workdir)
 

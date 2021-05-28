@@ -5,6 +5,7 @@ import * as cdk from '@aws-cdk/core';
 import * as ssm from '@aws-cdk/aws-ssm';
 import * as s3 from "@aws-cdk/aws-s3";
 import * as cloudfront from "@aws-cdk/aws-cloudfront";
+import * as ddb from '@aws-cdk/aws-dynamodb';
 
 import { loadSSMParams } from '../lib/infrastructure/ssm-params-util';
 import { CognitoStack } from '../lib/infrastructure/cognito-stack';
@@ -16,6 +17,8 @@ import { ChatAPIStack } from '../lib/api/chatAPI-stack';
 import { MeetingAPIStack } from '../lib/api/meetingAPI-stack';
 import { RoutingAPIStack } from '../lib/api/routingAPI-stack';
 import { FrontendConfigStack } from '../lib/frontend/frontend-config-stack';
+import { RecordingStack } from '../lib/recording/recording-stack';
+import { RecordingAPIStack } from '../lib/api/recordingAPI-stack';
 
 const configParams = require('../config.params.json');
 
@@ -23,6 +26,9 @@ export class CdkBackendStack extends cdk.Stack {
 
   public readonly webAppBucket: s3.IBucket;
   public readonly webAppCloudFrontOAI: cloudfront.IOriginAccessIdentity;
+  public readonly appTable: ddb.ITable;
+  public readonly recordingECSClusterARN: string;
+  public readonly recordingECSClusterName: string;
 
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -48,12 +54,44 @@ export class CdkBackendStack extends cdk.Stack {
       cdkAppName: configParams['CdkAppName']
     });
 
+    //create Recording stack
+    let recordingAPIEndpoint = '';
+    if (ssmParams.deployRecordingStack) {
+      const recordingStack = new RecordingStack(this, 'RecordingStack', {
+        SSMParams: ssmParams,
+        cdkAppName: configParams['CdkAppName']
+      });
+      this.recordingECSClusterARN = recordingStack.recordingECSClusterARN;
+      this.recordingECSClusterName = recordingStack.recordingECSClusterName;
+
+      const recordingAPIStack = new RecordingAPIStack(this, 'RecordingAPIStack', {
+        SSMParams: ssmParams,
+        cdkAppName: configParams['CdkAppName'],
+        cognitoAuthenticatedRole: cognitoStack.authenticatedRole,
+        appTable: dynamodbStack.appTable,
+        recordingECSClusterARN: recordingStack.recordingECSClusterARN,
+        recordingECSClusterName: recordingStack.recordingECSClusterName,
+        recordingContainerName: recordingStack.recordingContainerName,
+        recordingTaskDefinitionARN: recordingStack.recordingTaskDefinitionARN,
+        recordingBucketName: recordingStack.recordingBucketName,
+        recordingTaskDefinitionExecutionRoleARN: recordingStack.recordingTaskDefinitionExecutionRoleARN
+      });
+
+      recordingAPIStack.addDependency(recordingStack);
+      recordingAPIEndpoint = recordingAPIStack.recordingAPI.apiEndpoint;
+
+    }
+
+
 
     //create API stacks
     const connectAPIStack = new ConnectAPIStack(this, 'ConnectAPIStack', {
       SSMParams: ssmParams,
       cognitoAuthenticatedRole: cognitoStack.authenticatedRole,
-      cdkAppName: configParams['CdkAppName']
+      cognitoUserPoolId: cognitoStack.userPool.userPoolId,
+      cognitoUserPoolARN: cognitoStack.userPool.userPoolArn,
+      appTable: dynamodbStack.appTable,
+      cdkAppName: configParams['CdkAppName'],
     });
     connectAPIStack.addDependency(cognitoStack);
 
@@ -112,6 +150,7 @@ export class CdkBackendStack extends cdk.Stack {
         { key: 'meetingAPI', value: `${meetingAPIStack.meetingAPI.apiEndpoint}/` },
         { key: 'chatAPI', value: `${chatAPIStack.chatAPI.apiEndpoint}/` },
         { key: 'routingAPI', value: `${routingAPIStack.routingAPI.apiEndpoint}/` },
+        { key: 'recordingAPI', value: `${recordingAPIEndpoint}/` },
         { key: 'backendRegion', value: this.region },
         { key: 'connectInstanceARN', value: ssmParams.connectInstanceARN },
         { key: 'connectInstanceURL', value: ssmParams.connectInstanceURL },
@@ -119,6 +158,8 @@ export class CdkBackendStack extends cdk.Stack {
         { key: 'cognitoSAMLIdentityProviderName', value: ssmParams.cognitoSAMLIdentityProviderName },
         { key: 'connectDefaultContactFlowId', value: ssmParams.connectDefaultContactFlowId },
         { key: 'websiteAdHocRouteBaseURL', value: ssmParams.websiteAdHocRouteBaseURL },
+        { key: 'deployRecordingStack', value: String(ssmParams.deployRecordingStack) },
+        { key: 'recordingAttendeeName', value: ssmParams.recordingAttendeeName }
       ]
     });
     frontendConfigStack.addDependency(cognitoStack);
@@ -134,6 +175,7 @@ export class CdkBackendStack extends cdk.Stack {
 
     this.webAppBucket = webAppBucket;
     this.webAppCloudFrontOAI = webAppCloudFrontOAI;
+    this.appTable = dynamodbStack.appTable;
 
     new cdk.CfnOutput(this, "userPoolId", {
       value: cognitoStack.userPool.userPoolId

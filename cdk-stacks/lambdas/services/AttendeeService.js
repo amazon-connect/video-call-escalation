@@ -86,8 +86,42 @@ const getAttendeeJoinData = async (externalMeetingId, attendeeExternalUserId) =>
     return joinInfo;
 }
 
+const deleteAttendee = async (externalMeetingId, meetingOwnerUsername, attendeeExternalUserId) => {
+    if (!externalMeetingId) throw new ErrorHandler(400, 'Must provide External Meeting Id');
+    if (!meetingOwnerUsername) throw new ErrorHandler(400, 'Must provide meeting owner username');
+    if (!attendeeExternalUserId) throw new ErrorHandler(400, 'Must provide Attendee External User Id');
+
+    //first, have to find that meeting and check the owner
+    const meetingItem = await MeetingRepo.getMeetingByExternalMeetingId(externalMeetingId).catch(error => {
+        console.error('getMeetingByExternalMeetingId: ', error);
+        throw new ErrorHandler(500, 'Delete Attendee Error, please try again later');
+    });
+
+    if (!meetingItem) throw new ErrorHandler(404, 'Delete Attendee Error, meeting not found');
+    if (meetingItem.ownerUsername !== meetingOwnerUsername) throw new ErrorHandler(400, 'Delete Attendee Error, user is not the owner');
+
+    //get the attendee
+    const attendeeItem = await AttendeeRepo.getAttendeeByExternalUserId(externalMeetingId, attendeeExternalUserId).catch(error => {
+        console.error('getAttendeeByExternalUserId: ', error);
+        throw new ErrorHandler(500, 'Delete Attendee Error, please try again later');
+    });
+
+    if (!attendeeItem.chimeAttendeeId) throw new ErrorHandler(404, 'Attendee not found');
+
+    const deleteInfo = await Chime.deleteAttendee({
+        MeetingId: meetingItem.chimeMeetingId,
+        AttendeeId: attendeeItem.chimeAttendeeId
+    }).promise().catch(error => {
+        console.error('Chime.deleteAttendee: ', error);
+        throw new ErrorHandler(500, 'Delete Attendee Error, please try again later');
+    });
+
+    return deleteInfo;
+}
+
 module.exports = {
     getAttendeeName,
     createAttendee,
-    getAttendeeJoinData
+    getAttendeeJoinData,
+    deleteAttendee
 }

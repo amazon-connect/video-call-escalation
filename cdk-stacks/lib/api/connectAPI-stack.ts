@@ -8,10 +8,14 @@ import * as iam from '@aws-cdk/aws-iam';
 import * as apigw from '@aws-cdk/aws-apigateway'
 import * as apigw2 from "@aws-cdk/aws-apigatewayv2";
 import * as apigw2i from "@aws-cdk/aws-apigatewayv2-integrations";
+import * as ddb from '@aws-cdk/aws-dynamodb';
 
 export interface ConnectAPIStackProps extends cdk.NestedStackProps {
     readonly SSMParams: any;
     readonly cognitoAuthenticatedRole: iam.IRole;
+    readonly cognitoUserPoolId: string;
+    readonly cognitoUserPoolARN: string;
+    readonly appTable: ddb.ITable;
     readonly cdkAppName: string;
 }
 
@@ -28,12 +32,12 @@ export class ConnectAPIStack extends cdk.NestedStack {
             entry: 'lambdas/handlers/ConnectAPI/ccpLogin.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
-                ConnectInstanceId: props.SSMParams.connectInstanceARN.split('/')[1]
+                ConnectInstanceId: props.SSMParams.connectInstanceARN.split('/')[1],
             }
         });
 
         //Allow connectAPILambda to invoke Amazon Connect
-        ccpLoginLambda.role?.attachInlinePolicy(new iam.Policy(this, 'ConnectAPIAccess', {
+        ccpLoginLambda.role?.attachInlinePolicy(new iam.Policy(this, 'ConnectGetFederationTokenAccess', {
             statements: [
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
@@ -44,7 +48,7 @@ export class ConnectAPIStack extends cdk.NestedStack {
         }));
 
         //Allow connectAPILambda to invoke STS
-        ccpLoginLambda.role?.attachInlinePolicy(new iam.Policy(this, 'STSAccess', {
+        ccpLoginLambda.role?.attachInlinePolicy(new iam.Policy(this, 'STSAssumeRoleAccess', {
             statements: [
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
@@ -57,12 +61,84 @@ export class ConnectAPIStack extends cdk.NestedStack {
         //add env variable - RoleToAssume
         ccpLoginLambda.addEnvironment('RoleToAssume', props.SSMParams.ccpLoginLambdaRoleToAssume === props.SSMParams.SSM_NOT_DEFINED ? ccpLoginLambda.role?.roleArn || '' : props.SSMParams.ccpLoginLambdaRoleToAssume);
 
+        const putConnectUserCacheLambda = new nodeLambda.NodejsFunction(this, 'PutConnectUserCacheLambda', {
+            functionName: `${props.cdkAppName}-PutConnectUserCacheLambda`,
+            runtime: lambda.Runtime.NODEJS_12_X,
+            entry: 'lambdas/handlers/ConnectAPI/putConnectUserCache.js',
+            timeout: cdk.Duration.seconds(20),
+            environment: {
+                ConnectInstanceId: props.SSMParams.connectInstanceARN.split('/')[1],
+                DDB_TABLE: props.appTable.tableName
+            }
+        });
+        props.appTable.grantReadWriteData(putConnectUserCacheLambda);
+
+        putConnectUserCacheLambda.role?.attachInlinePolicy(new iam.Policy(this, 'ConnectDescribeUserAccess', {
+            statements: [
+                new iam.PolicyStatement({
+                    effect: iam.Effect.ALLOW,
+                    actions: ["connect:DescribeUser"],
+                    resources: [
+                        props.SSMParams.connectInstanceARN + '/user/*',
+                        props.SSMParams.connectInstanceARN + '/agent/*'
+                    ]
+                })
+            ]
+        }));
+
+        putConnectUserCacheLambda.role?.attachInlinePolicy(new iam.Policy(this, 'ConnectDescribeUserHierarchyGroupAccess', {
+            statements: [
+                new iam.PolicyStatement({
+                    effect: iam.Effect.ALLOW,
+                    actions: ["connect:DescribeUserHierarchyGroup"],
+                    resources: [props.SSMParams.connectInstanceARN + '/agent-group/*']
+                })
+            ]
+        }));
+
+
+        const setConnectUserIdLambda = new nodeLambda.NodejsFunction(this, 'SetConnectUserIdLambda', {
+            functionName: `${props.cdkAppName}-SetConnectUserIdLambda`,
+            runtime: lambda.Runtime.NODEJS_12_X,
+            entry: 'lambdas/handlers/ConnectAPI/setConnectUserId.js',
+            timeout: cdk.Duration.seconds(20),
+            environment: {
+                ConnectInstanceId: props.SSMParams.connectInstanceARN.split('/')[1],
+                CognitoUserPoolId: props.cognitoUserPoolId,
+                DDB_TABLE: props.appTable.tableName
+            }
+        });
+
+        setConnectUserIdLambda.role?.attachInlinePolicy(new iam.Policy(this, 'ConnectDescribeUserAccess2', {
+            statements: [
+                new iam.PolicyStatement({
+                    effect: iam.Effect.ALLOW,
+                    actions: ["connect:DescribeUser"],
+                    resources: [
+                        props.SSMParams.connectInstanceARN + '/user/*',
+                        props.SSMParams.connectInstanceARN + '/agent/*'
+                    ]
+                })
+            ]
+        }));
+
+        setConnectUserIdLambda.role?.attachInlinePolicy(new iam.Policy(this, 'CognitoUpdateUserAttributesAccess', {
+            statements: [
+                new iam.PolicyStatement({
+                    effect: iam.Effect.ALLOW,
+                    actions: ["cognito-idp:AdminUpdateUserAttributes"],
+                    resources: [props.cognitoUserPoolARN]
+                })
+            ]
+        }));
+
+
         //create ConnectAPI Integration
         const connectAPI = new apigw2.HttpApi(this, 'ConnectAPI', {
             apiName: `${props.cdkAppName}-ConnectAPI`,
             corsPreflight: {
                 allowOrigins: props.SSMParams.agentAPIAllowedOrigins.split(',').map((item: string) => item.trim()),
-                allowMethods: [apigw2.CorsHttpMethod.POST],
+                allowMethods: [apigw2.CorsHttpMethod.POST, apigw2.CorsHttpMethod.PUT],
                 allowHeaders: apigw.Cors.DEFAULT_HEADERS.concat(['cognitoIdToken'])
             }
         });
@@ -72,16 +148,35 @@ export class ConnectAPIStack extends cdk.NestedStack {
             integration: new apigw2i.LambdaProxyIntegration({ handler: ccpLoginLambda }),
             routeKey: apigw2.HttpRouteKey.with('/ccplogin', apigw2.HttpMethod.POST)
         });
-
         const ccpLogin_RouteCfn = ccpLogin_Route.node.defaultChild as apigw2.CfnRoute;
         ccpLogin_RouteCfn.authorizationType = 'AWS_IAM';
 
+        const setConnectUserId_Route = new apigw2.HttpRoute(this, 'SetConnectUserId_Route', {
+            httpApi: connectAPI,
+            integration: new apigw2i.LambdaProxyIntegration({ handler: setConnectUserIdLambda }),
+            routeKey: apigw2.HttpRouteKey.with('/setConnectUserId', apigw2.HttpMethod.POST)
+        });
+        const setConnectUserId_RouteCfn = setConnectUserId_Route.node.defaultChild as apigw2.CfnRoute;
+        setConnectUserId_RouteCfn.authorizationType = 'AWS_IAM';
+
+        const putConnectUserCache_Route = new apigw2.HttpRoute(this, 'PutConnectUserCache_Route', {
+            httpApi: connectAPI,
+            integration: new apigw2i.LambdaProxyIntegration({ handler: putConnectUserCacheLambda }),
+            routeKey: apigw2.HttpRouteKey.with('/connect-user-cache', apigw2.HttpMethod.PUT)
+        })
+        const putConnectUserCache_RouteCfn = putConnectUserCache_Route.node.defaultChild as apigw2.CfnRoute;
+        putConnectUserCache_RouteCfn.authorizationType = 'AWS_IAM';
+
         //Allow Identity Pool to invoke ConnectAPI Login resource
-        props.cognitoAuthenticatedRole.attachInlinePolicy(new iam.Policy(this, 'ConnectAPI_CCPLoginResources', {
+        props.cognitoAuthenticatedRole.attachInlinePolicy(new iam.Policy(this, 'ConnectAPI_Resources', {
             statements: [new iam.PolicyStatement({
                 effect: iam.Effect.ALLOW,
                 actions: ["execute-api:Invoke"],
-                resources: [`arn:aws:execute-api:${this.region}:${this.account}:${connectAPI.httpApiId}/$default/${ccpLogin_RouteCfn.routeKey.replace(/\s+/g, '')}`]
+                resources: [
+                    `arn:aws:execute-api:${this.region}:${this.account}:${connectAPI.httpApiId}/$default/${ccpLogin_RouteCfn.routeKey.replace(/\s+/g, '')}`,
+                    `arn:aws:execute-api:${this.region}:${this.account}:${connectAPI.httpApiId}/$default/${setConnectUserId_RouteCfn.routeKey.replace(/\s+/g, '')}`,
+                    `arn:aws:execute-api:${this.region}:${this.account}:${connectAPI.httpApiId}/$default/${putConnectUserCache_RouteCfn.routeKey.replace(/\s+/g, '')}`,
+                ]
             })]
         }));
 

@@ -1,7 +1,7 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ControlBar,
   AudioInputControl,
@@ -16,6 +16,7 @@ import {
 import EndMeetingControl from '../EndMeetingControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import { StyledControls } from './Styled';
+import ToggleRecordingButton from '../../components/ToggleRecordingButton'
 
 const MeetingControls = () => {
   const { toggleNavbar, closeRoster, showRoster } = useNavigation();
@@ -42,6 +43,9 @@ const MeetingControls = () => {
           onClick={handleToggle}
           label="Menu"
         />
+
+        <ToggleRecordingButton />
+
         <AudioInputControl />
         <VideoInputControl />
         <ContentShareControl />

@@ -3,6 +3,7 @@
     "CdkBackendStack": "VideoCallEscalationBackend",
     "CdkFrontendStack": "VideoCallEscalationFrontend",
     "CdkPipelineStack": "VideoCallEscalationPipeline",
+    "CdkChimeEventBridgeStack": "VideoCallEscalationChimeEventBridge",
     "WebAppRootPrefix": "WebAppRoot/",
     "WebAppStagingPrefix": "WebAppStaging/",
     "hierarchy": "/VideoCallEscalation/",
@@ -131,6 +132,37 @@
             "description": "The name of Stage in the CDK pipeline",
             "required": true,
             "parent": "cdkPipelineEnabled"
+        },
+        {
+            "name": "deployRecordingStack",
+            "cliFormat": "deploy-recording-stack",
+            "description": "If you want to enable video call recording, set to true. Otherwise, set to false",
+            "defaultValue": false,
+            "required": true,
+            "boolean": true
+        },
+        {
+            "name": "recordingPlaybackSecurityProfileId",
+            "cliFormat": "recording-playback-security-profile-id",
+            "description": "Amazon Connect Security Profile that allows users to playback video recordings",
+            "required": true,
+            "parent": "deployRecordingStack"
+        },
+        {
+            "name": "recordingAttendeeName",
+            "cliFormat": "recording-attendee-name",
+            "description": "Displayed as attendee name when recording is started",
+            "defaultValue": "RECORDING",
+            "required": true,
+            "parent": "deployRecordingStack"
+        },
+        {
+            "name": "recordingPresignedURLExpiresMinutes",
+            "cliFormat": "recording-presigned-url-expires-minutes",
+            "description": "Amazon S3 Presigned URL expire time, in minutes, for call recording files",
+            "defaultValue": "15",
+            "required": true,
+            "parent": "deployRecordingStack"
         }
     ]
 }

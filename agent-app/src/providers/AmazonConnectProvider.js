@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT-0
 
 import React, { useContext, useState } from 'react';
+import { ConnectContactAttributes } from '../constants/index';
+
 const AmazonConnectContext = React.createContext(null);
 
 export function useAmazonConnectProvider() {
@@ -23,6 +25,8 @@ export function AmazonConnectProvider({ children }) {
     const [attendeeName, setAttendeeName] = useState('');
     const [attendeeEmail, setAttendeeEmail] = useState('');
     const [attendeeExternalUserId, setAttendeeExternalUserId] = useState('');
+    const [videoRecordingAutoStartEnabled, setVideoRecordingAutoStartEnabled] = useState(false);
+    const [videoRecordingStartStopEnabled, setVideoRecordingStartStopEnabled] = useState(false);
 
     const subscribeToEvents = () => {
         const connect = window.connect;
@@ -84,10 +88,14 @@ export function AmazonConnectProvider({ children }) {
     const processContactAttributes = (contact) => {
         const contactAttributes = contact.getAttributes();
         console.info(`[VideoCallEscalation] AmazonConnectProvider >> ContactAttributes >> `, contactAttributes)
-        setExternalMeetingId(contactAttributes['videoExternalMeetingId']?.value || '');
-        setAttendeeExternalUserId(contactAttributes['videoAttendeeExternalUserId']?.value || '');
-        setAttendeeName(contactAttributes['videoAttendeeName']?.value || '');
-        setAttendeeEmail(contactAttributes['videoAttendeeEmail']?.value || '')
+
+        setExternalMeetingId(getContactAttributeValue(contactAttributes[ConnectContactAttributes.videoExternalMeetingId]));
+        setAttendeeExternalUserId(getContactAttributeValue(contactAttributes[ConnectContactAttributes.videoAttendeeExternalUserId]));
+        setAttendeeName(getContactAttributeValue(contactAttributes[ConnectContactAttributes.videoAttendeeName]));
+        setAttendeeEmail(getContactAttributeValue(contactAttributes[ConnectContactAttributes.videoAttendeeEmail]));
+
+        setVideoRecordingAutoStartEnabled(getBoolContactAttributeValue(contactAttributes[ConnectContactAttributes.videoRecordingAutoStartEnabled]));
+        setVideoRecordingStartStopEnabled(getBoolContactAttributeValue(contactAttributes[ConnectContactAttributes.videoRecordingStartStopEnabled]));
     }
 
     const sendChatMessage = (message) => {
@@ -101,6 +109,9 @@ export function AmazonConnectProvider({ children }) {
             setAttendeeName('');
             setAttendeeEmail('');
             setAttendeeExternalUserId('');
+
+            setVideoRecordingAutoStartEnabled(false);
+            setVideoRecordingStartStopEnabled(false);
         }
         catch (error) {
             console.error(`[VideoCallEscalation] AmazonConnectProvider`, error);
@@ -108,6 +119,18 @@ export function AmazonConnectProvider({ children }) {
 
     }
 
+    const getContactAttributeValue = (attribute, defaultValue = '') => {
+        return attribute?.value.trim() || defaultValue;
+    }
+
+    const getBoolContactAttributeValue = (attribute) => {
+        return attribute?.value.trim().toLocaleLowerCase() === "true"
+    }
+
+    const recordingManagerFeatures = {
+        videoRecordingAutoStartEnabled,
+        videoRecordingStartStopEnabled
+    }
 
     const providerValue = {
         contactId,
@@ -117,6 +140,7 @@ export function AmazonConnectProvider({ children }) {
         attendeeName,
         attendeeEmail,
         attendeeExternalUserId,
+        recordingManagerFeatures,
         subscribeToEvents,
         sendChatMessage
     };

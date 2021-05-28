@@ -1,0 +1,26 @@
+{
+  "name": "recording-app",
+  "version": "1.0.0",
+  "description": "web based Recording application that runs in a container",
+  "main": "app.js",
+  "scripts": {
+    "build": "esbuild src/js/app.js --bundle --outdir=build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amazon-connect/video-call-escalation.git"
+  },
+  "author": "mcosic",
+  "license": "MIT-0",
+  "bugs": {
+    "url": "https://github.com/amazon-connect/video-call-escalation/issues"
+  },
+  "homepage": "https://github.com/amazon-connect/video-call-escalation#readme",
+  "devDependencies": {
+    "esbuild": "^0.12.1",
+    "eslint": "^7.27.0"
+  },
+  "dependencies": {
+    "amazon-chime-sdk-js": "^2.10.0"
+  }
+}

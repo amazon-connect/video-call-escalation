@@ -10,7 +10,7 @@ import * as apigw2i from "@aws-cdk/aws-apigatewayv2-integrations";
 import * as ddb from '@aws-cdk/aws-dynamodb';
 import * as iam from '@aws-cdk/aws-iam';
 
-export interface RoutingPIStackProps extends cdk.NestedStackProps {
+export interface RoutingAPIStackProps extends cdk.NestedStackProps {
     readonly SSMParams: any;
     readonly cognitoAuthenticatedRole: iam.IRole;
     readonly appTable: ddb.ITable;
@@ -21,7 +21,7 @@ export class RoutingAPIStack extends cdk.NestedStack {
 
     public readonly routingAPI: apigw2.IHttpApi;
 
-    constructor(scope: cdk.Construct, id: string, props: RoutingPIStackProps) {
+    constructor(scope: cdk.Construct, id: string, props: RoutingAPIStackProps) {
         super(scope, id, props);
 
         //create createAdHocRoute Lambda

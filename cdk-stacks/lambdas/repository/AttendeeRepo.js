@@ -65,8 +65,22 @@ const putAttendee = async (externalMeetingId, attendee) => {
     }).promise();
 }
 
+const getAttendeeByExternalUserId = async (externalMeetingId, externalUserId) => {
+    const result = await DynamoDB.get({
+        TableName: DDB_TABLE,
+        Key: {
+            PK: `${ENTITIES.Meeting.entityPrefix}${externalMeetingId}`,
+            SK: `${ENTITIES.Attendee.entityPrefix}${externalUserId}`
+        }
+    }).promise();
+
+    if (!result.Item) return null;
+    return result.Item;
+}
+
 module.exports = {
     getAttendeeName,
     getAttendeeJoinData,
-    putAttendee
+    putAttendee,
+    getAttendeeByExternalUserId
 }

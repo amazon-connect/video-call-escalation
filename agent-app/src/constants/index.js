@@ -48,12 +48,34 @@ export const SDK_LOG_LEVELS = {
 }
 
 export const DevicePermissionStatus = {
-  UNSET : 'UNSET',
-  IN_PROGRESS : 'IN_PROGRESS',
-  GRANTED : 'GRANTED',
-  DENIED : 'DENIED',
+  UNSET: 'UNSET',
+  IN_PROGRESS: 'IN_PROGRESS',
+  GRANTED: 'GRANTED',
+  DENIED: 'DENIED',
 }
 
 export const DemoWebsitePage = 'demo-website.html'
 
 export const DeprecatedConnectDomain = 'awsapps.com'
+
+export const RecordingStatus = {
+  NOT_STARTED: 'NOT_STARTED',
+  STARTED: 'STARTED',
+  STOPPED: 'STOPPED',
+  STARTING: 'STARTING',
+  STOPPING: 'STOPPING',
+  STARTING_FAILED: 'STARTING_FAILED',
+  STOPPING_FAILED: 'STOPPING_FAILED',
+  STOPPING_UNKNOWN: 'STOPPING_UNKNOWN',
+  REQUEST_REJECTED: 'REQUEST_REJECTED'
+}
+
+export const ConnectContactAttributes = {
+  videoExternalMeetingId: 'videoExternalMeetingId',
+  videoAttendeeExternalUserId: 'videoAttendeeExternalUserId',
+  videoAttendeeName: 'videoAttendeeName',
+  videoAttendeeEmail: 'videoAttendeeEmail',
+  videoRecordingAutoStartEnabled: 'videoRecordingAutoStartEnabled',
+  videoRecordingStartStopEnabled: 'videoRecordingStartStopEnabled',
+  videoRecordingPlaybackURL: 'videoRecordingPlaybackURL'
+}

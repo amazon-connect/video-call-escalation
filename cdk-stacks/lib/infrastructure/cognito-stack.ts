@@ -37,6 +37,9 @@ export class CognitoStack extends cdk.NestedStack {
                     mutable: true
                 }
             },
+            customAttributes: {
+                connectUserId: new cognito.StringAttribute({ minLen: 36, maxLen: 36, mutable: true })
+            },
             userInvitation: {
                 emailSubject: "Your VideoCallEscalation temporary password",
                 emailBody: "Your VideoCallEscalation username is {username} and temporary password is {####}"
@@ -51,7 +54,7 @@ export class CognitoStack extends cdk.NestedStack {
         let cognitoSAML: cognito.CfnUserPoolIdentityProvider | undefined = undefined;
         let supportedIdentityProviders: cognito.UserPoolClientIdentityProvider[] = [];
         let userPoolClientOAuthConfig: cognito.OAuthSettings = {
-            scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.COGNITO_ADMIN]
+            scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.COGNITO_ADMIN, cognito.OAuthScope.PROFILE]
         }
         if (props.SSMParams.cognitoSAMLEnabled) {
             cognitoSAML = new cognito.CfnUserPoolIdentityProvider(this, "CognitoSAML", {

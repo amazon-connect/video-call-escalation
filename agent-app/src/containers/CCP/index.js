@@ -5,21 +5,23 @@ import './styled.css';
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import 'amazon-connect-streams';
 import 'amazon-connect-chatjs';
-import { Modal, ModalBody, ModalHeader } from 'amazon-chime-sdk-component-library-react';
+import { Modal, ModalBody, ModalHeader, Spinner } from 'amazon-chime-sdk-component-library-react';
 import Card from '../../components/Card';
 import { ccpLogin } from '../../apis/connectAPI'
 import { getErrorContext } from '../../providers/ErrorProvider';
-import {useAppConfig} from '../../providers/AppConfigProvider'
-import {useAmazonConnectProvider} from '../../providers/AmazonConnectProvider'
+import { useAppConfig } from '../../providers/AppConfigProvider'
+import { useAmazonConnectProvider } from '../../providers/AmazonConnectProvider'
 import { useAppState } from '../../providers/AppStateProvider';
+import { useInitProvider } from '../../providers/InitProvider';
 
-
-const CCP = () => {
+const CCP = ({ isOnboarding = false }) => {
 
     const {
         connectInstanceURL,
         connectInstanceRegion
     } = useAppConfig();
+
+    const { initConnectUser } = useInitProvider();
 
     const {
         connectLoginByEmail,
@@ -64,20 +66,14 @@ const CCP = () => {
                         loginPopup: false,
                         region: connectInstanceRegion,
                         softphone: {
-                            allowFramedSoftphone: true,
-                            disableRingtone: false
+                            allowFramedSoftphone: !isOnboarding,
+                            disableRingtone: isOnboarding
                         }
                     });
 
                     window.connect.agent(agent => {
-                        console.info(`[VideoCallEscalation] Connect Init completed, removing hidden_iframe!`);
-                        hidden_iframe_div.current.innerHTML = '';
-                        setLoaded(true);
-                        const connectAgentConfiguration = agent.getConfiguration()
-                        setConnectUsername(connectAgentConfiguration.username)
-                        subscribeToEvents();
+                        onConnectInitialized(agent);
                     });
-
                 }
                 else {
                     console.info(`[VideoCallEscalation] Connect Already Initialized`);
@@ -87,6 +83,21 @@ const CCP = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loggedIn]);
+
+    const onConnectInitialized = async (connectAgent) => {
+        console.info(`[VideoCallEscalation] Connect Init completed, removing hidden_iframe!`);
+        hidden_iframe_div.current.innerHTML = '';
+
+        if (isOnboarding) {
+            await initConnectUser();
+        }
+        else {
+            const connectAgentConfiguration = connectAgent.getConfiguration();
+            setConnectUsername(connectAgentConfiguration.username);
+            setLoaded(true);
+            if (!isOnboarding) subscribeToEvents();
+        }
+    }
 
     const handleLogin = async (e) => {
         console.info(`[VideoCallEscalation] CCP Login Form Submitted`);
@@ -105,8 +116,8 @@ const CCP = () => {
     return (
         <>
             <div className="CCP">
-                <div id="ccpLoading" style={loaded ? { display: 'none' } : { display: 'block' }} >Loading...</div>
-                <div id="ccpContainer" style={loaded ? {} : { visibility: 'hidden' }} />
+                <div id="ccpLoading" style={loaded || isOnboarding ? { display: 'none' } : { display: 'block' }} ><Spinner width="3rem" height="3rem" /></div>
+                <div id="ccpContainer" style={loaded && !isOnboarding ? {} : { visibility: 'hidden' }} />
                 <div id="hidden_iframe_div" ref={hidden_iframe_div} style={{ visibility: 'hidden' }} />
 
                 <div id="loginFrm_div" style={{ visibility: 'hidden' }}>

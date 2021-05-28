@@ -2,7 +2,7 @@
 
 This solution deploys all the resources needed to enable Video Communication in a Contact Centre environment.
 
-For this purpose, we are using Amazon Connect, which is an easy to use omni-channel contact centre service, and Amazon Chime SDK which a set of real-time communication components that developers can use to quickly add video and screen sharing capabilities to their web or mobile applications.
+For this purpose, we are using Amazon Connect, which is an easy to use omni-channel contact centre service, and Amazon Chime SDK which a set of real-time communication components that developers can use to quickly add video and screen sharing capabilities to their web or mobile applications, with optional video call recording feature.
 
 ## Use-case scenario
 
@@ -30,6 +30,8 @@ In this solution, both cameras are turned off by default, so that customer and a
 Once input and output devices are selected, customer and agent can talk on the video call, and they can share their screen as well. During the video session, we still have the chat channel opened, so agent and customer can share information through that channel as well. For instance, the agent can send a link to our customer, like Terms and Conditions, or an email address, or something similar. 
 
 At the end, either agent or customer can disconnect the session, and agent would automatically become ready for their next call, or a chat.
+
+To learn more about Video Call Recording Feature, please visit [Video Call Recording](/cdk-stacks/README.md#Video-Call-Recording)
 
 This solution demonstrates one option for enabling video communication in Contact Centre, however AWS provides APIs and SDKs, as building blocks, so that our customers can develop both agent and customer experience that is most suitable fof them.
 

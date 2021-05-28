@@ -97,6 +97,10 @@ export class CdkPipelineStack extends cdk.Stack {
                     new iam.PolicyStatement({
                         actions: ["ssm:GetParameter"],
                         resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter${configParams.hierarchy}*`]
+                    }),
+                    new iam.PolicyStatement({
+                        actions: ["ec2:DescribeAvailabilityZones"],
+                        resources: ["*"]
                     })
                 ]
             })
@@ -108,7 +112,8 @@ export class CdkPipelineStack extends cdk.Stack {
             env: {
                 account: process.env.CDK_DEFAULT_ACCOUNT,
                 region: process.env.CDK_DEFAULT_REGION
-            }
+            },
+            deployRecordingStack: ssmParams.deployRecordingStack
         }));
     }
 

@@ -45,5 +45,35 @@ export const ENTITIES = {
             attendeeEmail: 'attendeeEmail',
             TTL: 'TTL'
         }
+    },
+    Recording: {
+        entityPrefix: 'REC#',
+        entityType: 'Recording',
+        attributes: {
+            recordingId: 'recordingId',
+            ownerUsername: 'ownerUsername',
+            ownerEmail: 'ownerEmail',
+            connectUserId: 'connectUserId',
+            connectHierarchyGroupId: 'connectHierarchyGroupId',
+            connectHierarchyGroupSummary: 'connectHierarchyGroupSummary',
+            createdAt: 'createdAt',
+            endedAt: 'endedAt',
+            recordingS3Bucket: 'recordingS3Bucket',
+            recordingS3Object: 'recordingS3Object',
+            ecsTaskARN: 'ecsTaskARN',
+            TTL: 'TTL'
+        }
+    },
+    ConnectUserCache: {
+        entityPrefix: 'CUC#',
+        entityType: 'ConnectUserCache',
+        attributes: {
+            connectUserId: 'connectUserId',
+            hierarchyGroupId: 'hierarchyGroupId',
+            hierarchyGroupSummary: 'hierarchyGroupSummary',
+            securityProfileIds: 'securityProfileIds',
+            createdAt: 'createdAt',
+            TTL: 'TTL'
+        }
     }
 }

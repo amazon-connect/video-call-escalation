@@ -10,6 +10,7 @@ import Amplify from '@aws-amplify/core'
 
 import { AppStateProvider } from './providers/AppStateProvider'
 import { AppConfigProvider } from './providers/AppConfigProvider';
+import { InitProvider } from './providers/InitProvider';
 
 const isFederateLogin = window.location.search === '?federate' ? true : false
 const isFederateLogout = window.location.search === '?logout' ? true : false
@@ -28,10 +29,10 @@ const amplifyAuthConfig = {
 if (vceConfig.cognitoSAMLEnabled === "true") {
   amplifyAuthConfig['oauth'] = {
     domain: vceConfig.cognitoDomainURL.replace(/(^\w+:|^)\/\//, ''),
-    scope: ['email', 'openid', 'aws.cognito.signin.user.admin'],
+    scope: ['email', 'openid', 'aws.cognito.signin.user.admin', 'profile'],
     redirectSignIn: `${window.location.protocol}//${window.location.host}`,
     redirectSignOut: `${window.location.protocol}//${window.location.host}/?logout`,
-    responseType: 'token',
+    responseType: 'code',
     label: 'Sign in with SSO',
     customProvider: 'AWSSSO'
   }
@@ -53,6 +54,11 @@ const amplifyAPIConfig = {
       name: 'routingAPI',
       endpoint: vceConfig.routingAPI.replace(/\/$/, ""),
       region: amplifyAuthConfig.region
+    },
+    {
+      name: 'recordingAPI',
+      endpoint: vceConfig.recordingAPI.replace(/\/$/, ""),
+      region: amplifyAuthConfig.region
     }
   ]
 }
@@ -66,7 +72,9 @@ ReactDOM.render(
   <React.StrictMode>
     <AppConfigProvider vceConfig={vceConfig}>
       <AppStateProvider>
-        <App isFederateLogin={isFederateLogin} isFederateLogout={isFederateLogout} />
+        <InitProvider>
+          <App isFederateLogin={isFederateLogin} isFederateLogout={isFederateLogout} />
+        </InitProvider>
       </AppStateProvider>
     </AppConfigProvider>
 

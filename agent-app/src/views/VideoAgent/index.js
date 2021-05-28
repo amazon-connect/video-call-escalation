@@ -13,11 +13,12 @@ import routes from '../../constants/routes';
 import MeetingView from '../MeetingView';
 import DeviceSetup from '../DeviceSetup';
 import MeetingSetup from '../MeetingSetup';
+import { RecordingProvider } from '../../providers/RecordingProvider'
 
 
 const VideoAgent = () => {
 
-  const { meetingManagerConfig } = useAppConfig();
+  const { meetingManagerConfig, recordingManagerConfig } = useAppConfig();
 
   return (
     <div className='VideoAgent'>
@@ -29,17 +30,19 @@ const VideoAgent = () => {
           <NotificationProvider>
             <Notifications />
             <MeetingProvider {...meetingManagerConfig}>
-              <NavigationProvider>
-                <Switch>
-                  <Route exact path={routes.MEETING_SETUP} component={MeetingSetup} />
-                  <Route path={routes.DEVICE_SETUP}>
+              <RecordingProvider {...recordingManagerConfig}>
+                <NavigationProvider>
+                  <Switch>
+                    <Route exact path={routes.MEETING_SETUP} component={MeetingSetup} />
+                    <Route path={routes.DEVICE_SETUP}>
                       <DeviceSetup />
-                  </Route>
-                  <Route path={routes.MEETING}>
+                    </Route>
+                    <Route path={routes.MEETING}>
                       <MeetingView />
-                  </Route>
-                </Switch>
-              </NavigationProvider>
+                    </Route>
+                  </Switch>
+                </NavigationProvider>
+              </RecordingProvider>
             </MeetingProvider>
           </NotificationProvider>
         </Router>

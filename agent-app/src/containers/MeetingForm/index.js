@@ -26,8 +26,9 @@ import DevicePermissionPrompt from '../DevicePermissionPrompt';
 import RegionSelection from './RegionSelection';
 import { useAppState } from '../../providers/AppStateProvider';
 import { useAmazonConnectProvider } from '../../providers/AmazonConnectProvider';
+import { useRecordingManager } from '../../providers/RecordingProvider';
 
-import { createMeeting, createAttendee, getAttendeeNameCallback } from '../../apis/chimeAPI';
+import { createMeeting, getAttendeeNameCallback } from '../../apis/chimeAPI';
 
 const MeetingForm = () => {
   const meetingManager = useMeetingManager();
@@ -39,14 +40,17 @@ const MeetingForm = () => {
   } = useAppState();
 
   const {
+    contactId: connectContactId,
     contactState: connectContactState,
     externalMeetingId: connectExternalMeetingId,
     attendeeName: connectAttendeeName,
     attendeeEmail: connectAttendeeEmail,
     attendeeExternalUserId: connectAttendeeExternalUserId,
-    sendChatMessage: connectSendChatMessage
+    sendChatMessage: connectSendChatMessage,
+    recordingManagerFeatures: connectRecordingManagerFeatures
   } = useAmazonConnectProvider();
 
+  const recordingManager = useRecordingManager();
 
   const [isError, setIsError] = useState(false);
   const [externalMeetingId, setExternalMeetingId] = useState(appExternalMeetingId);
@@ -102,17 +106,23 @@ const MeetingForm = () => {
       if (customerAttendee) meetingAttendees.push(customerAttendee);
 
       const { JoinInfo } = await createMeeting(externalMeetingId, externalMeetingId, meetingRegion, meetingAttendees);
+      setAppMeetingInfo(externalMeetingId, attendeeName, meetingRegion);
 
+      recordingManager.initRecordingStatus(externalMeetingId, connectContactId);
+      recordingManager.setRecordingFeatures({ ...connectRecordingManagerFeatures });
 
       await meetingManager.join({
         meetingInfo: JoinInfo.Meeting,
         attendeeInfo: JoinInfo.Attendee
       });
 
-      setAppMeetingInfo(externalMeetingId, attendeeName, meetingRegion);
 
       if (connectAttendeeExternalUserId && connectAttendeeName) {
         connectAskCustomerToJoin(externalMeetingId);
+      }
+
+      if (recordingManager.shouldAutoStartRecording()) {
+        recordingManager.startRecording(true);
       }
 
       history.replace(routes.DEVICE_SETUP);

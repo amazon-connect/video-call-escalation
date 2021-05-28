@@ -3,7 +3,6 @@
 
 import * as cdk from '@aws-cdk/core';
 import * as ddb from '@aws-cdk/aws-dynamodb'
-import { DescribeDocumentPermissionCommand } from '@aws-sdk/client-ssm';
 
 export interface DynamoDBStackProps extends cdk.NestedStackProps {
     readonly SSMParams: any;
