@@ -23,7 +23,7 @@ module.exports = {
         ]
     },
     plugins: [
-        new CleanWebpackPlugin({ verbose: true }),
+        new CleanWebpackPlugin({ verbose: false }),
         new HtmlWebpackPlugin({
             template: 'src/index.html'
         }),

@@ -1,9 +1,12 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import './style.scss'
-import './amazon-connect-chat-interface.js'
-import 'bootstrap'
+import './style.scss';
+import './amazon-connect-chat-interface.js';
+import 'bootstrap';
+import $ from 'jquery';
+import 'jquery-ui/ui/widgets/draggable';
+
 const uuidv4 = require('uuid/v4')
 
 const vceConfig = window.vceConfig;

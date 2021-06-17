@@ -35,14 +35,14 @@
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.104",
-    "@types/jest": "^26.0.10",
+    "@types/jest": "^26.0.23",
     "@types/node": "10.17.27",
     "aws-cdk": "1.104",
-    "esbuild": "^0.11.9",
+    "esbuild": "^0.11.23",
     "jest": "^26.4.2",
-    "ts-jest": "^26.2.0",
-    "ts-node": "^9.0.0",
-    "typescript": "~3.9.7"
+    "ts-jest": "^26.5.6",
+    "ts-node": "^9.1.1",
+    "typescript": "^3.9.9"
   },
   "dependencies": {
     "@aws-cdk/aws-apigateway": "1.104",
@@ -61,7 +61,7 @@
     "@aws-cdk/aws-ssm": "1.104",
     "@aws-cdk/core": "1.104",
     "@aws-cdk/pipelines": "1.104",
-    "@aws-sdk/client-ssm": "^3.5.0",
+    "@aws-sdk/client-ssm": "^3.18.0",
     "source-map-support": "^0.5.16"
   }
 }
