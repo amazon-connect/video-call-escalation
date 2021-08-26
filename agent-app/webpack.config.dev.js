@@ -6,6 +6,7 @@ module.exports = merge(commonConfig, {
   devtool: 'source-map',
   output: { publicPath: '/' },
   devServer: {
+    static: './',
     open: true,
     historyApiFallback: true
   }

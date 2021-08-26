@@ -6,7 +6,7 @@ module.exports = merge(commonConfig, {
   devtool: 'source-map',
   output: { publicPath: '/' },
   devServer: {
-    open: true,
-    openPage: 'demo-website.html'
+    static: './',
+    open: ['demo-website.html'],
   }
 })
