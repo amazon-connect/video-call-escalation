@@ -145,7 +145,7 @@ export class ConnectAPIStack extends cdk.NestedStack {
 
         const ccpLogin_Route = new apigw2.HttpRoute(this, 'CCPLogin_Route', {
             httpApi: connectAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: ccpLoginLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('ccpLoginLambda', ccpLoginLambda),
             routeKey: apigw2.HttpRouteKey.with('/ccplogin', apigw2.HttpMethod.POST)
         });
         const ccpLogin_RouteCfn = ccpLogin_Route.node.defaultChild as apigw2.CfnRoute;
@@ -153,7 +153,7 @@ export class ConnectAPIStack extends cdk.NestedStack {
 
         const setConnectUserId_Route = new apigw2.HttpRoute(this, 'SetConnectUserId_Route', {
             httpApi: connectAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: setConnectUserIdLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('setConnectUserIdLambda', setConnectUserIdLambda),
             routeKey: apigw2.HttpRouteKey.with('/setConnectUserId', apigw2.HttpMethod.POST)
         });
         const setConnectUserId_RouteCfn = setConnectUserId_Route.node.defaultChild as apigw2.CfnRoute;
@@ -161,7 +161,7 @@ export class ConnectAPIStack extends cdk.NestedStack {
 
         const putConnectUserCache_Route = new apigw2.HttpRoute(this, 'PutConnectUserCache_Route', {
             httpApi: connectAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: putConnectUserCacheLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('putConnectUserCacheLambda', putConnectUserCacheLambda),
             routeKey: apigw2.HttpRouteKey.with('/connect-user-cache', apigw2.HttpMethod.PUT)
         })
         const putConnectUserCache_RouteCfn = putConnectUserCache_Route.node.defaultChild as apigw2.CfnRoute;

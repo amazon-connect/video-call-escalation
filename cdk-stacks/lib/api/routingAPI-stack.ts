@@ -47,7 +47,7 @@ export class RoutingAPIStack extends cdk.NestedStack {
 
         const createAdHocRoute_Route = new apigw2.HttpRoute(this, 'CreateAdHocRoute_Route', {
             httpApi: routingAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: createAdHocRouteLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('createAdHocRouteLambda', createAdHocRouteLambda),
             routeKey: apigw2.HttpRouteKey.with('/adhoc', apigw2.HttpMethod.POST)
         });
 

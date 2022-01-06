@@ -161,7 +161,7 @@ export class RecordingAPIStack extends cdk.NestedStack {
 
         const startRecording_Route = new apigw2.HttpRoute(this, 'StartRecording_Route', {
             httpApi: recordingAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: startRecordingLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('startRecordingLambda', startRecordingLambda),
             routeKey: apigw2.HttpRouteKey.with('/recording', apigw2.HttpMethod.POST)
         });
         const startRecording_RouteCfn = startRecording_Route.node.defaultChild as apigw2.CfnRoute;
@@ -169,7 +169,7 @@ export class RecordingAPIStack extends cdk.NestedStack {
 
         const stopRecording_Route = new apigw2.HttpRoute(this, 'StopRecording_Route', {
             httpApi: recordingAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: stopRecordingLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('stopRecordingLambda', stopRecordingLambda),
             routeKey: apigw2.HttpRouteKey.with('/recording', apigw2.HttpMethod.DELETE)
         });
         const stopRecording_RouteCfn = stopRecording_Route.node.defaultChild as apigw2.CfnRoute;
@@ -177,7 +177,7 @@ export class RecordingAPIStack extends cdk.NestedStack {
 
         const getRecordingSummary_Route = new apigw2.HttpRoute(this, 'GetRecordingSummary_Route', {
             httpApi: recordingAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: getRecordingSummaryLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('getRecordingSummaryLambda', getRecordingSummaryLambda),
             routeKey: apigw2.HttpRouteKey.with('/recording-summary', apigw2.HttpMethod.GET)
         });
         const getRecordingSummary_RouteCfn = getRecordingSummary_Route.node.defaultChild as apigw2.CfnRoute;

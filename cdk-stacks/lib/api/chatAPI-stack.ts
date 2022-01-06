@@ -58,7 +58,7 @@ export class ChatAPIStack extends cdk.NestedStack {
 
         const startChat_Route = new apigw2.HttpRoute(this, 'StartChat_Route', {
             httpApi: chatAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: startChatLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('startChatLambda', startChatLambda),
             routeKey: apigw2.HttpRouteKey.with('/start', apigw2.HttpMethod.POST)
         });
 

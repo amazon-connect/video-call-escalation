@@ -5,7 +5,6 @@ import * as cdk from '@aws-cdk/core';
 import * as iam from '@aws-cdk/aws-iam';
 import * as ssm from '@aws-cdk/aws-ssm';
 import * as codecommit from "@aws-cdk/aws-codecommit";
-import * as codepipeline from "@aws-cdk/aws-codepipeline";
 import * as pipelines from "@aws-cdk/pipelines";
 import * as codepipeline_actions from "@aws-cdk/aws-codepipeline-actions";
 import { loadSSMParams, fixDummyValueString } from '../infrastructure/ssm-params-util';
@@ -29,7 +28,7 @@ export class CdkPipelineStack extends cdk.Stack {
 
         if (ssmParams.cdkPipelineCreateNewRepository) {
             repository = new codecommit.Repository(this, `${configParams['CdkAppName']}-Repository`, {
-                repositoryName: ssmParams.cdkPipelineRepositoryName
+                repositoryName: fixDummyValueString(ssmParams.cdkPipelineRepositoryName)
             });
 
             // *** CREATE AN IAM USER WITH CREDENTIALS TO THE CODECOMMIT REPO ***
@@ -68,31 +67,28 @@ export class CdkPipelineStack extends cdk.Stack {
         else {
             // *** IMPORT A REPOSITORY ***
             // This imports an existing CodeCommit repository (if you have created it already)
-            repository = codecommit.Repository.fromRepositoryName(this, `${configParams['CdkAppName']}-Repository`, ssmParams.cdkPipelineRepositoryName);
+            repository = codecommit.Repository.fromRepositoryName(this, `${configParams['CdkAppName']}-Repository`, fixDummyValueString(ssmParams.cdkPipelineRepositoryName));
         }
 
         /**
         *** STEP 2: SET UP A CDK PIPELINE  ***
         **/
-        const sourceArtifact = new codepipeline.Artifact();
-        const cloudAssemblyArtifact = new codepipeline.Artifact();
 
-        const cdkPipeline = new pipelines.CdkPipeline(this, `${configParams['CdkAppName']}-Pipeline`, {
+        const cdkPipeline = new pipelines.CodePipeline(this, `${configParams['CdkAppName']}-Pipeline`, {
             pipelineName: `${configParams['CdkAppName']}-Pipeline`,
-            cloudAssemblyArtifact: cloudAssemblyArtifact,
-            sourceAction: new codepipeline_actions.CodeCommitSourceAction({
-                actionName: 'CodeCommit',
-                output: sourceArtifact,
-                repository: repository,
-                branch: ssmParams.cdkPipelineRepositoryBranchName
-            }),
-            synthAction: pipelines.SimpleSynthAction.standardNpmSynth({
-                sourceArtifact: sourceArtifact,
-                cloudAssemblyArtifact: cloudAssemblyArtifact,
-                subdirectory: 'cdk-stacks',
-                installCommand: 'npm run install:all',
-                buildCommand: 'npm run build:frontend',
-                synthCommand: 'npm run cdk:remove:context && npx cdk synth',
+            synth: new pipelines.CodeBuildStep('Synth', {
+                input: pipelines.CodePipelineSource.codeCommit(repository, ssmParams.cdkPipelineRepositoryBranchName),
+                installCommands: [
+                    "npm install -g npm@8",
+                    "cd cdk-stacks",
+                    "npm run install:all"
+                ],
+                commands: [
+                    "npm run build:frontend",
+                    "npm run cdk:remove:context",
+                    "npx cdk synth"
+                ],
+                primaryOutputDirectory: "cdk-stacks/cdk.out",
                 rolePolicyStatements: [
                     new iam.PolicyStatement({
                         actions: ["ssm:GetParameter"],
@@ -108,7 +104,7 @@ export class CdkPipelineStack extends cdk.Stack {
 
         /* *** DEFINE APPLICATION STAGES ****   */
 
-        cdkPipeline.addApplicationStage(new CdkPipelineStage(this, fixDummyValueString(`${configParams['CdkAppName']}-${ssmParams.cdkPipelineStageName}`), {
+        cdkPipeline.addStage(new CdkPipelineStage(this, fixDummyValueString(`${configParams['CdkAppName']}-${ssmParams.cdkPipelineStageName}`), {
             env: {
                 account: process.env.CDK_DEFAULT_ACCOUNT,
                 region: process.env.CDK_DEFAULT_REGION

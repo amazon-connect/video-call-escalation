@@ -18,14 +18,15 @@
     ]
   },
   "dependencies": {
-    "@aws-amplify/api-rest": "1.2.17",
-    "@aws-amplify/auth": "3.4.17",
-    "@aws-amplify/ui-react": "0.2.34",
+    "@aws-amplify/api-rest": "^2.0.29",
+    "@aws-amplify/auth": "^4.3.19",
+    "@aws-amplify/ui-react": "^1.2.26",
     "@babel/runtime": "^7.12.18",
     "amazon-chime-sdk-component-library-react": "1.6.1",
     "amazon-chime-sdk-js": "1.22.0",
     "amazon-connect-chatjs": "1.1.4",
     "amazon-connect-streams": "1.6.3",
+    "aws-amplify": "^4.3.11",
     "react": "16.12.0",
     "react-dom": "16.12.0",
     "react-router-dom": "5.1.2",
@@ -50,7 +51,7 @@
     "style-loader": "^2.0.0",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.0.0",
+    "webpack-dev-server": "^4.1.1",
     "webpack-merge": "^5.7.3"
   },
   "scripts": {

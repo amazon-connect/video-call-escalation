@@ -33,13 +33,13 @@ export class MeetingAPIStack extends cdk.NestedStack {
 
         const getAttendeeJoinData_Route = new apigw2.HttpRoute(this, 'GetAttendeeJoinData_Route', {
             httpApi: meetingAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: props.getAttendeeJoinDataLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('getAttendeeJoinDataLambda', props.getAttendeeJoinDataLambda),
             routeKey: apigw2.HttpRouteKey.with('/attendee-join-data', apigw2.HttpMethod.GET)
         });
 
         const getAttendeeName_Route = new apigw2.HttpRoute(this, 'GetAttendeeName_Route', {
             httpApi: meetingAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: props.getAttendeeNameLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('getAttendeeNameLambda', props.getAttendeeNameLambda),
             routeKey: apigw2.HttpRouteKey.with('/attendee-name', apigw2.HttpMethod.GET)
         });
 

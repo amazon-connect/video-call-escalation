@@ -144,7 +144,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
         //create chimeAPI Meeting Resources
         const createMeeting_Route = new apigw2.HttpRoute(this, 'CreateMeeting_Route', {
             httpApi: chimeAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: createMeetingLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('createMeetingLambda', createMeetingLambda),
             routeKey: apigw2.HttpRouteKey.with('/meeting', apigw2.HttpMethod.POST)
         });
         const createMeeting_RouteCfn = createMeeting_Route.node.defaultChild as apigw2.CfnRoute;
@@ -152,7 +152,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
 
         const endMeetingForAll_Route = new apigw2.HttpRoute(this, 'EndMeetingForAll_Route', {
             httpApi: chimeAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: endMeetingForAllLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('endMeetingForAllLambda', endMeetingForAllLambda),
             routeKey: apigw2.HttpRouteKey.with('/meeting', apigw2.HttpMethod.DELETE)
         });
         const endMeetingForAll_RouteCfn = endMeetingForAll_Route.node.defaultChild as apigw2.CfnRoute;
@@ -173,7 +173,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
         //create chimeAPI Attendee Resources
         const getAttendeeName_Route = new apigw2.HttpRoute(this, 'GetAttendeeName_Route', {
             httpApi: chimeAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: getAttendeeNameLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('getAttendeeNameLambda', getAttendeeNameLambda),
             routeKey: apigw2.HttpRouteKey.with('/attendee-name', apigw2.HttpMethod.GET)
         });
         const getAttendeeName_RouteCfn = getAttendeeName_Route.node.defaultChild as apigw2.CfnRoute;
@@ -181,7 +181,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
 
         const createAttendee_Route = new apigw2.HttpRoute(this, 'CreateAttendee_Route', {
             httpApi: chimeAPI,
-            integration: new apigw2i.LambdaProxyIntegration({ handler: createAttendeeLambda }),
+            integration: new apigw2i.HttpLambdaIntegration('createAttendeeLambda', createAttendeeLambda),
             routeKey: apigw2.HttpRouteKey.with('/attendee', apigw2.HttpMethod.POST)
         });
         const createAttendee_RouteCfn = createAttendee_Route.node.defaultChild as apigw2.CfnRoute;
