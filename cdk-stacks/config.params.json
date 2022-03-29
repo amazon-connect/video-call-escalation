@@ -17,19 +17,19 @@
         {
             "name": "connectInstanceURL",
             "cliFormat": "connect-instance-url",
-            "description": "Amazon Connect instance URL that solution will use. For example: https://connect-instance-alias.awsapps.com",
+            "description": "Amazon Connect instance URL that solution will use. For example: https://connect-instance-alias.my.connect.aws (or https://connect-instance-alias.awsapps.com)",
             "required": true
         },
         {
             "name": "connectDefaultContactFlowId",
             "cliFormat": "connect-default-contact-flow-id",
-            "description": "This is Amazon Connect Contact Flow Id for the Contact Flow to be started when a new Chat contact is initiated. For example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "description": "Amazon Connect Contact Flow Id for the Contact Flow to be started when a new Chat contact is initiated (VideoCallEscalationChat Flow Id). For example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
             "required": true
         },
         {
             "name": "cognitoDomainPrefix",
             "cliFormat": "cognito-domain-prefix",
-            "description": "Please provide a prefix for Amazon Cognito hosted UI domain, where users will be redirected during the login process. The domain prefix has to be unique, and you could put your Amazon Connect Instance Alias to it. For example: video-call-escalation-connect-instance-alias",
+            "description": "Amazon Cognito hosted UI domain prefix, where users will be redirected during the login process. The domain prefix has to be unique, and you could put your Amazon Connect Instance Alias to it. For example: video-call-escalation-connect-instance-alias",
             "required": true
         },
         {

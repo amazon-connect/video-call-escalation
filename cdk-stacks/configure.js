@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 const configParams = require('./config.params.json')
-const { SSMClient, GetParameterCommand, PutParameterCommand, DeleteParameterCommand } = require('@aws-sdk/client-ssm')
+const { SSMClient, PutParameterCommand, GetParametersCommand, DeleteParametersCommand } = require('@aws-sdk/client-ssm')
 const ssmClient = new SSMClient()
 const fs = require('fs')
 const readline = require("readline")
@@ -46,53 +46,117 @@ function isNotDefined(param) {
     return param.value === SSM_NOT_DEFINED
 }
 
-function isUndefinedNullEmpty(value){
+function isUndefinedNullEmpty(value) {
     return value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
 }
 
 function throwParameterRequired(param) {
 
-   throw new Error(`Required parameter not provided: [${param.cliFormat}]`)
+    throw new Error(`Required parameter not provided: [${param.cliFormat}]`)
 }
 
 async function loadParametersSSM() {
-    console.log(`\nLoading current parameters from AWS System Manager Parameter Store\n`)
+    console.log(`\nLoading current parameters from AWS System Manager Parameter Store\n`);
 
-    for (const param of configParams.parameters) {
-        console.log(`AWS SSM get ${configParams.hierarchy}${param.name}`)
-        const loadedParam = await ssmClient.send(new GetParameterCommand({ Name: `${configParams.hierarchy}${param.name}` })).catch(error=>{
-            console.log(error.message)
-        })
-        if(loadedParam!==undefined){
-            param.value = parseParam(loadedParam.Parameter.Value)
-        }
+    const chunkedParameters = chunkArray(configParams.parameters, 10);
+    for (let i = 0; i < chunkedParameters.length; i++) {
+        const getParametersResult = await getParametersSSMBatch(chunkedParameters[i]).catch(error => {
+            console.log(`ERROR: getParametersSSMBatch: ${error.message}`); return undefined;
+        });
+
+        getParametersResult?.forEach(loadedParam => {
+            if (loadedParam.Value && loadedParam.Name) {
+                const configParam = configParams.parameters.find(configParam => configParam.name === /[^/]*$/.exec(loadedParam.Name)[0]);
+                configParam.value = parseParam(loadedParam.Value);
+            }
+        });
+
+        if (i !== 0 && i % 2 === 0) await wait(1000);
     }
 
-    console.log(`\nLoad completed\n`)
+    console.log(`\nLoad completed\n`);
+}
+
+async function getParametersSSMBatch(parametersArray) {
+    if (parametersArray?.length < 1 || parametersArray?.length > 10) throw new Error(`getParametersSSMBatch -> parametersArray -> Minimum number of 1 item. Maximum number of 10 items`);
+
+    const paramNamesArray = parametersArray.map((param) => `${configParams.hierarchy}${param.name}`);
+
+    const getParametersResult = await ssmClient.send(new GetParametersCommand({ Names: paramNamesArray }));
+
+    getParametersResult?.InvalidParameters?.forEach(invalidParam => { console.log(`Error loading parameter: ${invalidParam}`); });
+
+    return getParametersResult?.Parameters;
 }
 
 async function storeParametersSSM() {
     console.log(`\nStoring parameters to AWS System Manager Parameter Store\n`)
 
-    for (const param of configParams.parameters) {
-        console.log(`AWS SSM put ${configParams.hierarchy}${param.name}`)
-        //supports only String parameters
-        await ssmClient.send(new PutParameterCommand({Type:'String', Name: `${configParams.hierarchy}${param.name}`, Value: param.boolean? param.value.toString() : param.value, Overwrite: true }))
+    const chunkedParameters = chunkArray(configParams.parameters, 5);
+    for (let i = 0; i < chunkedParameters.length; i++) {
+        await putParametersSSMBatch(chunkedParameters[i]).catch(error => {
+            console.log(`ERROR: putParametersSSMBatch: ${error.message}`);
+        });
+        await wait(1000);
     }
 
     console.log(`\nStore completed\n`)
 }
 
-async function deleteParametersSSM() {
-    console.log(`\nDeleting parameters to AWS System Manager Parameter Store\n`)
+async function putParametersSSMBatch(parametersArray) {
+    if (parametersArray?.length < 1 || parametersArray?.length > 5) throw new Error(`putParametersSSMBatch -> parametersArray -> Minimum number of 1 item. Maximum number of 5 items`);
 
-    for (const param of configParams.parameters) {
-        console.log(`AWS SSM delete ${configParams.hierarchy}${param.name}`)
-        await ssmClient.send(new DeleteParameterCommand({ Name: `${configParams.hierarchy}${param.name}` }))
+    for (const param of parametersArray) {
+        console.log(`\nAWS SSM put ${configParams.hierarchy}${param.name} = ${param.value}`);
+        //supports only String parameters
+        const putParameterResult = await ssmClient.send(new PutParameterCommand({ Type: 'String', Name: `${configParams.hierarchy}${param.name}`, Value: param.boolean ? param.value.toString() : param.value, Overwrite: true }));
+        console.log(`Stored param: ${configParams.hierarchy}${param.name} | tier: ${putParameterResult.Tier} | version: ${putParameterResult.Version}\n`);
+    }
+}
+
+async function deleteParametersSSM() {
+    console.log(`\nDeleting parameters to AWS System Manager Parameter Store\n`);
+
+    const chunkedParameters = chunkArray(configParams.parameters, 10);
+    for (let i = 0; i < chunkedParameters.length; i++) {
+        await deleteParametersSSMBatch(chunkedParameters[i]).catch(error => {
+            console.log(`ERROR: deleteParametersSSMBatch: ${error.message}`);
+        });
+        await wait(1000);
     }
 
     console.log(`\nDelete completed\n`)
     process.exit(0);
+}
+
+async function deleteParametersSSMBatch(parametersArray) {
+    if (parametersArray?.length < 1 || parametersArray?.length > 10) throw new Error(`deleteParametersSSMBatch -> parametersArray -> Minimum number of 1 item. Maximum number of 10 items`);
+
+    const paramNamesArray = parametersArray.map((param) => `${configParams.hierarchy}${param.name}`);
+    const deleteParametersResult = await ssmClient.send(new DeleteParametersCommand({ Names: paramNamesArray }));
+
+    deleteParametersResult?.InvalidParameters?.forEach(invalidParam => { console.log(`Error deleting parameter: ${invalidParam}`); });
+
+    deleteParametersResult?.DeletedParameters?.forEach(deletedParam => { console.log(`Deleted param: ${deletedParam}`) });
+}
+
+function chunkArray(inputArray, chunkSize) {
+    let index = 0;
+    const arrayLength = inputArray.length;
+    let resultArray = [];
+
+    for (index = 0; index < arrayLength; index += chunkSize) {
+        let chunkItem = inputArray.slice(index, index + chunkSize);
+        resultArray.push(chunkItem);
+    }
+
+    return resultArray;
+}
+
+function wait(time) {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), time);
+    });
 }
 
 async function writeConfigCacheJSON() {
@@ -168,8 +232,6 @@ function getArgs() {
 }
 
 async function runInteractive(loadSSM = false) {
-    console.log(`\nRunning in interactive mode\n`)
-
     if (loadSSM) {
         await loadParametersSSM()
     }
@@ -254,12 +316,12 @@ async function run() {
         console.log(`\nConfiguration complete, review your parameters in config.cache.json\n`)
         process.exit(0)
     }
-    catch(error){
+    catch (error) {
         console.error(`\nError: ${error.message}\n`)
         if (VERBOSE) console.log(error)
         process.exit(1)
     }
-    
+
 }
 
 run()

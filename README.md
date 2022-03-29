@@ -80,9 +80,11 @@ Solution architecture:
 * AWS Account
 * AWS IAM user with Administrator permissions
 * Amazon Connect instance (SSO/SAML enabled)
-* Node and NPM installed and configured on your computer
-* AWS CLI installed and configured on your computer
-* AWS CDK installed and configured on your computer
+* Node (v14) and NPM (v8.5) installed and configured on your computer
+* AWS CLI (v2) installed and configured on your computer
+* AWS CDK (v1.150) installed and configured on your computer
+* Recording stack requires **Docker** to be installed on your computer, to pull, build and publish a docker image to Amazon ECR (Elastic Container Registry).
+
 
 ## Solution setup
 
@@ -124,15 +126,16 @@ This step assumes you have completed all the prerequisites, and you have an exis
     `node configure.js -i`
     - (You can configure it via single command, by directly providing parameters, as described in the script help instructions)
     - When prompted, provide the following parameters:
-        - `connect-instance-arn`: Amazon Connect instance ARN that solution will use.
-        - `connect-instance-url`: Amazon Connect instance URL that solution will use
-        - `connect-default-contact-flow-id`: Amazon Connect Contact Flow Id for the Contact Flow to be started when a new Chat contact is initiated (VideoCallEscalationChat Flow Id)
-        - `cognito-domain-prefix`: Amazon Cognito hosted UI domain, where users will be redirected during the login process. The domain prefix has to be unique.
+        - `connect-instance-arn`: Amazon Connect instance ARN that solution will use. For example: arn:aws:connect:{region}:111111111111:instance/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+        - `connect-instance-url`: Amazon Connect instance URL that solution will use. For example: https://connect-instance-alias.my.connect.aws (or https://connect-instance-alias.awsapps.com)
+        - `connect-default-contact-flow-id`: Amazon Connect Contact Flow Id for the Contact Flow to be started when a new Chat contact is initiated (VideoCallEscalationChat Flow Id). For example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+        - `cognito-domain-prefix`: Amazon Cognito hosted UI domain prefix, where users will be redirected during the login process. The domain prefix has to be unique, and you could put your Amazon Connect Instance Alias to it. For example: video-call-escalation-connect-instance-alias
         - `agent-api-allowed-origins`: Allowed Origins for agent-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
         - `website-api-allowed-origins`: Allowed Origins for (demo-)website-side APIs, please keep * at this point, we will come back to it once our front-end is deployed.
-        - `website-ad-hoc-route-base-url`: Base URL for ad-hoc routes, for demo purposes, agent-app and demo-website have the same host (CloudFront), hence you can leave this parameter empty.
+        - `website-ad-hoc-route-base-url`: Base URL for ad-hoc routes. For demo purposes, agent-app and demo-website have the same host (CloudFront), hence you can leave this parameter empty.
         - `cognito-saml-enabled`: as a starting point, set this parameter to `false`
-        - `cdk-pipeline-enabled`: for CLI based deployment, set this parameter to `false`
+        - `cdk-pipeline-enabled`: for Stack based deployment, set this parameter to `false`
+        - `deploy-recording-stack`: If you want to enable video call recording, set to true. Otherwise, set to false. To learn more about Video Call Recording Feature and Video Call Recording configuration parameters, please visit [Video Call Recording](/cdk-stacks/README.md#Video-Call-Recording)
     - The script stores the deployment parameters to AWS System Manager Parameter Store
 
 1. Deploy CDK stacks
