@@ -7,7 +7,7 @@ import 'bootstrap';
 import $ from 'jquery';
 import 'jquery-ui/ui/widgets/draggable';
 
-const uuidv4 = require('uuid/v4')
+import { v4 as uuidv4 } from 'uuid';
 
 const vceConfig = window.vceConfig;
 
@@ -194,13 +194,16 @@ export class DemoMeetingApp {
             this.log('Video input quality is changed');
             switch (videoInputQuality.value) {
                 case '360p':
-                    this.audioVideo.chooseVideoInputQuality(640, 360, 15, 600);
+                    this.audioVideo.chooseVideoInputQuality(640, 360, 15);
+                    this.audioVideo.setVideoMaxBandwidthKbps(600);
                     break;
                 case '540p':
-                    this.audioVideo.chooseVideoInputQuality(960, 540, 15, 1400);
+                    this.audioVideo.chooseVideoInputQuality(960, 540, 15);
+                    this.audioVideo.setVideoMaxBandwidthKbps(1400);
                     break;
                 case '720p':
                     this.audioVideo.chooseVideoInputQuality(1280, 720, 15, 1400);
+                    this.audioVideo.setVideoMaxBandwidthKbps(1400);
                     break;
             }
             await this.openVideoInputFromSelection(videoInput.value, true);
@@ -224,8 +227,7 @@ export class DemoMeetingApp {
                 try {
                     this.showProgress('progress-join');
                     await this.join();
-                    this.audioVideo.stopVideoPreviewForVideoInput(document.getElementById('video-preview'));
-                    this.audioVideo.chooseVideoInputDevice(null);
+                    await this.meetingSession.audioVideo.stopVideoInput();
                     this.hideProgress('progress-join');
                     this.displayButtonStates();
                     this.switchToFlow('flow-meeting');
@@ -672,7 +674,7 @@ export class DemoMeetingApp {
             await this.audioVideo.listAudioInputDevices(),
             additionalDevices,
             async (name) => {
-                await this.audioVideo.chooseAudioInputDevice(this.audioInputSelectionToDevice(name));
+                await this.audioVideo.startAudioInput(this.audioInputSelectionToDevice(name));
             }
         );
     }
@@ -693,7 +695,7 @@ export class DemoMeetingApp {
             additionalDevices,
             async (name) => {
                 this.selectedVideoInput = name;
-                await this.audioVideo.chooseVideoInputDevice(
+                await this.audioVideo.startVideoInput(
                     this.videoInputSelectionToDevice(this.selectedVideoInput)
                 );
             }
@@ -715,7 +717,7 @@ export class DemoMeetingApp {
             await this.audioVideo.listAudioOutputDevices(),
             additionalDevices,
             async (name) => {
-                await this.audioVideo.chooseAudioOutputDevice(name);
+                await this.audioVideo.chooseAudioOutput(name);
             }
         );
     }
@@ -724,7 +726,7 @@ export class DemoMeetingApp {
 
     async openAudioInputFromSelection() {
         const audioInput = document.getElementById('audio-input');
-        await this.audioVideo.chooseAudioInputDevice(
+        await this.audioVideo.startAudioInput(
             this.audioInputSelectionToDevice(audioInput.value)
         );
         this.startAudioPreview();
@@ -774,7 +776,7 @@ export class DemoMeetingApp {
 
     async openAudioOutputFromSelection() {
         const audioOutput = document.getElementById('audio-output');
-        await this.audioVideo.chooseAudioOutputDevice(audioOutput.value);
+        await this.audioVideo.chooseAudioOutput(audioOutput.value);
         const audioMix = document.getElementById('meeting-audio');
         await this.audioVideo.bindAudioElement(audioMix);
     }
@@ -786,7 +788,7 @@ export class DemoMeetingApp {
             this.selectedVideoInput = selection;
         }
         this.log(`Switching to Video device: ${this.selectedVideoInput}`);
-        await this.audioVideo.chooseVideoInputDevice(
+        await this.audioVideo.startVideoInput(
             this.videoInputSelectionToDevice(this.selectedVideoInput)
         );
         if (showPreview) {
@@ -804,13 +806,6 @@ export class DemoMeetingApp {
     }
 
     videoInputSelectionToDevice(value) {
-        if (value === 'Blue') {
-            return DefaultDeviceController.synthesizeVideoDevice('blue');
-        } else if (value === 'SMPTE Color Bars') {
-            return DefaultDeviceController.synthesizeVideoDevice('smpte');
-        } else if (value === 'None') {
-            return DefaultDeviceController.createEmptyVideoDevice();
-        }
         return value;
     }
 
@@ -829,11 +824,13 @@ export class DemoMeetingApp {
 
     audioVideoDidStop(sessionStatus) {
         this.log(`session stopped from ${JSON.stringify(sessionStatus)}`);
-        if (sessionStatus.statusCode() === MeetingSessionStatusCode.AudioCallEnded) {
-            this.log(`meeting ended`);
+        this.audioVideo.stopAudioInput().then(() => {
+            if (sessionStatus.statusCode() === MeetingSessionStatusCode.AudioCallEnded) {
+                this.log(`meeting ended`);
 
-            window.location = window.location.pathname;
-        }
+                window.location = window.location.pathname;
+            }
+        });
     }
 
     videoTileDidUpdate(tileState) {
