@@ -33,7 +33,7 @@ export class RecordingAPIStack extends cdk.NestedStack {
         //create startRecording Lambda
         const startRecordingLambda = new nodeLambda.NodejsFunction(this, 'StartRecordingLambda', {
             functionName: `${props.cdkAppName}-StartRecordingLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/RecordingAPI/startRecording.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -94,7 +94,7 @@ export class RecordingAPIStack extends cdk.NestedStack {
         //create stopRecording Lambda
         const stopRecordingLambda = new nodeLambda.NodejsFunction(this, 'StopRecordingLambda', {
             functionName: `${props.cdkAppName}-StopRecordingLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/RecordingAPI/stopRecording.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -128,7 +128,7 @@ export class RecordingAPIStack extends cdk.NestedStack {
         //create getRecordingSummary Lambda
         const getRecordingSummaryLambda = new nodeLambda.NodejsFunction(this, 'GetRecordingSummaryLambda', {
             functionName: `${props.cdkAppName}-GetRecordingSummaryLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/RecordingAPI/getRecordingSummary.js',
             timeout: cdk.Duration.seconds(20),
             environment: {

@@ -174,7 +174,7 @@ export class RecordingStack extends cdk.NestedStack {
 
         const startRecordingPreWarmTaskLambda = new nodeLambda.NodejsFunction(this, 'StartRecordingPreWarmTaskLambda', {
             functionName: `${props.cdkAppName}-StartRecordingPreWarmTaskLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/RecordingAPI/startRecordingPreWarmTask.js',
             timeout: cdk.Duration.seconds(20),
             environment: {

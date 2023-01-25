@@ -32,7 +32,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
         **************************************************************************************************************/
         const createMeetingLambda = new nodeLambda.NodejsFunction(this, 'CreateMeetingLambda', {
             functionName: `${props.cdkAppName}-CreateMeetingLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ChimeAPI/createMeeting.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -56,7 +56,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
         **************************************************************************************************************/
         const endMeetingForAllLambda = new nodeLambda.NodejsFunction(this, 'EndMeetingForAllLambda', {
             functionName: `${props.cdkAppName}-EndMeetingForAllLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ChimeAPI/endMeetingForAll.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -80,7 +80,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
         **************************************************************************************************************/
         const getAttendeeJoinDataLambda = new nodeLambda.NodejsFunction(this, 'GetAttendeeJoinDataLambda', {
             functionName: `${props.cdkAppName}-GetAttendeeJoinDataLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ChimeAPI/getAttendeeJoinData.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -95,7 +95,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
         **************************************************************************************************************/
         const getAttendeeNameLambda = new nodeLambda.NodejsFunction(this, 'GetAttendeeNameLambda', {
             functionName: `${props.cdkAppName}-GetAttendeeNameLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ChimeAPI/getAttendeeName.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -110,7 +110,7 @@ export class ChimeAPIStack extends cdk.NestedStack {
         **************************************************************************************************************/
         const createAttendeeLambda = new nodeLambda.NodejsFunction(this, 'CreateAttendeeLambda', {
             functionName: `${props.cdkAppName}-CreateAttendeeLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ChimeAPI/createAttendee.js',
             timeout: cdk.Duration.seconds(20),
             environment: {

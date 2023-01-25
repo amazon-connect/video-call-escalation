@@ -93,7 +93,7 @@ This step assumes you have completed all the prerequisites, and you have an exis
 
 1. Clone the solution to your computer (using `git clone`)
 
-1. Import Amazon Connect Contact Flows
+2. Import Amazon Connect Contact Flows
     - Login into your Amazon Connect console, as Admin
     - From the main menu, select Routing -> Contact Flows
     - Click the drop-down button next to Create contact flow, and select Create customer queue flow
@@ -106,19 +106,19 @@ This step assumes you have completed all the prerequisites, and you have an exis
     - Browse to solution's ConnectContactFlows folder and select VideoCallEscalationChat file
     - Save and Publish the contact flow
 
-1. Check AWS CLI
+3. Check AWS CLI
     - AWS CDK will use AWS CLI local credentials and region
     - check your AWS CLI configuration by running an AWS CLI command (i.e. `aws s3 ls`)
     - you can also use profiles (i.e. `export AWS_PROFILE=yourProfile`)
     - you can confirm the configured region with  
      `aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]'`
 
-1. Install NPM packages 
+4. Install NPM packages 
     - Open your Terminal and navigate to `video-call-escalation/cdk-stacks`
     - Run `npm run install:all`
     - This script goes through all packages of the solution and installs necessary modules (agent-app, demo-website, cdk-stacks, lambdas)
 
-1. Configure CDK stacks
+5. Configure CDK stacks
     - In your terminal, navigate to `video-call-escalation/cdk-stacks`
     - To see the full instructions for the configuration script, run  
     `node configure.js -h`
@@ -138,7 +138,7 @@ This step assumes you have completed all the prerequisites, and you have an exis
         - `deploy-recording-stack`: If you want to enable video call recording, set to true. Otherwise, set to false. To learn more about Video Call Recording Feature and Video Call Recording configuration parameters, please visit [Video Call Recording](/cdk-stacks/README.md#Video-Call-Recording)
     - The script stores the deployment parameters to AWS System Manager Parameter Store
 
-1. Deploy CDK stacks
+6. Deploy CDK stacks
     - In your terminal, navigate to `video-call-escalation/cdk-stacks`
     - Run the script: `npm run build:frontend`
     - This script builds frontend applications (agent-app, demo-website)
@@ -147,62 +147,71 @@ This step assumes you have completed all the prerequisites, and you have an exis
     - This script deploys CDK stacks
     - Wait for all resources to be provisioned before continuing to the next step
     - AWS CDK output will be provided in your Terminal (Amazon Cognito User Pool Id, Amazon CloudFront Distribution URL)
+    
+7. Update CCPLogin Role
+   - From your AWS CDK output get the ccpLoginRoleName and ccpLoginRoleArn outputs
+   - Replace `ccpLoginRoleName` and `ccpLoginRoleArn` with their values in the below command and run it:
+   
+   `aws iam update-assume-role-policy --role-name ccpLoginRoleName --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"},{"Effect":"Allow","Principal":{"AWS":"ccpLoginRoleArn"},"Action":"sts:AssumeRole"}]}'
+     `
 
-1. Configure Amazon Connect Approved Origins
+   - This will allow the CCPLoginRole to assume its own role (needed in the CCPLoginLambda). If you are using SSO you will make another update to this (see SSO instructions). 
+
+9. Configure Amazon Connect Approved Origins
     - Login into your AWS Console
     - Navigate to Amazon Connect -> Your instance alias -> Approved origins
     - Click + Add origin
     - Enter your Amazon CloudFront Distribution URL (from the previous step)
 
-1. Configure API Allowed Origins (optional)
-    - Cross-origin resource sharing (CORS) is a browser security feature that restricts cross-origin HTTP requests that are initiated from scripts running in the browser. At this point, we can restrict our APIs to be accessible only from our Amazon CloudFront Distribution domain (origin).
-    - In your terminal, navigate to `video-call-escalation/cdk-stacks`
-    - Start the configuration script in interactive mode, with additional -l (`load`) parameter  
-    `node configure.js -i -l`
-    - The script loads all the existing parameters, and prompts for new parameters to be provided
-    - Accept all the existing parameters, but provide new values for:
-        - agent-api-allowed-origins: Domain of your agent application, in this case Amazon CloudFront Distribution URL. For instance: `https://aaaabbbbcccc.cloudfront.net`
-        - website-api-allowed-origins: Domain of your (demo-)website application, in this case Amazon CloudFront Distribution URL. For instance: `https://aaaabbbbcccc.cloudfront.net`
-    - For the demo purpose, both agent-app and demo-website are hosted at the same Amazon CloudFront Distribution, but these would, most probably, be different in your production environment. 
-    - The script stores the deployment parameters to AWS System Manager Parameter Store
-    - While in `video-call-escalation/cdk-stacks`, run the deploy script: `npm run cdk:deploy`
-    - Wait for the CDK stacks to be updated
+10. Configure API Allowed Origins (optional)
+     - Cross-origin resource sharing (CORS) is a browser security feature that restricts cross-origin HTTP requests that are initiated from scripts running in the browser. At this point, we can restrict our APIs to be accessible only from our Amazon CloudFront Distribution domain (origin).
+     - In your terminal, navigate to `video-call-escalation/cdk-stacks`
+     - Start the configuration script in interactive mode, with additional -l (`load`) parameter  
+     `node configure.js -i -l`
+     - The script loads all the existing parameters, and prompts for new parameters to be provided
+     - Accept all the existing parameters, but provide new values for:
+         - agent-api-allowed-origins: Domain of your agent application, in this case Amazon CloudFront Distribution URL. For instance: `https://aaaabbbbcccc.cloudfront.net`
+         - website-api-allowed-origins: Domain of your (demo-)website application, in this case Amazon CloudFront Distribution URL. For instance: `https://aaaabbbbcccc.cloudfront.net`
+     - For the demo purpose, both agent-app and demo-website are hosted at the same Amazon CloudFront Distribution, but these would, most probably, be different in your production environment. 
+     - The script stores the deployment parameters to AWS System Manager Parameter Store
+     - While in `video-call-escalation/cdk-stacks`, run the deploy script: `npm run cdk:deploy`
+     - Wait for the CDK stacks to be updated
 
-1. Create a test agent (user)
-    - To create an Amazon Cognito user, you'll need Cognito User Pool Id (created in step 5 - check for the AWS CDK Output, or check it in your AWS Console > Cognito User Pools)
-    - Create an Amazon Cognito user by executing:  
-    `aws cognito-idp admin-create-user --region yourDesiredRegion --user-pool-id yourUserPoolId  --username yourEmailAddress --user-attributes Name=name,Value=YourName`
-    - You will receive an email, with a temporary password, which you will need in the next step
-    - To create an Amazon Connect user, login into your Amazon Connect Console, select Users -> User management from the main menu
-    - Click Add new users button, then click Next
-    - Provide First name, Last name
-    - Set Login name as your email address (as you have set when creating Cognito user)
-    - Set Routing Profile (i.e. Basic Routing Profile)
-    - Set Security Profile (i.e. Agent)
-    - Click Save, then Create users
-    - Note: Amazon Cognito accepts + in the email (username), for instance when using a single email address for multiple users, while Amazon Connect UI doesn't support + in the username. Therefore, create Amazon Cognito user with +, but in Amazon Connect, replace + with _
+11. Create a test agent (user)
+     - To create an Amazon Cognito user, you'll need Cognito User Pool Id (created in step 5 - check for the AWS CDK Output, or check it in your AWS Console > Cognito User Pools)
+     - Create an Amazon Cognito user by executing:  
+     `aws cognito-idp admin-create-user --region yourDesiredRegion --user-pool-id yourUserPoolId  --username yourEmailAddress --user-attributes Name=name,Value=YourName`
+     - You will receive an email, with a temporary password, which you will need in the next step
+     - To create an Amazon Connect user, login into your Amazon Connect Console, select Users -> User management from the main menu
+     - Click Add new users button, then click Next
+     - Provide First name, Last name
+     - Set Login name as your email address (as you have set when creating Cognito user)
+     - Set Routing Profile (i.e. Basic Routing Profile)
+     - Set Security Profile (i.e. Agent)
+     - Click Save, then Create users
+     - Note: Amazon Cognito accepts + in the email (username), for instance when using a single email address for multiple users, while Amazon Connect UI doesn't support + in the username. Therefore, create Amazon Cognito user with +, but in Amazon Connect, replace + with _
 
-1. Test the solution
-    - Open your browser and navigate to Amazon CloudFront Distribution URL
-    - On the Login screen, provide your email address and temporary password you received via email
-    - In the demo solution, you will be asked to confirm your email address - select Email and wait for the confirmation code to be delivered, then enter the confirmation code in the form and submit
-    - At this point, the agent is logged in, and you could see Amazon Connect CCP on the left-hand side, and Amazon Chime meeting form on the right-hand side
-    - In the top-right corner, click on 'Demo website' link (best to open it in a new, detached window)
-    - On the demo-website, click "Video Call now" button, in bottom-right corner
-    - When prompted, provide your name (as a customer name)
-    - Provide your email address - please note, the demo Contact Flow (VideoCallEscalationChat) routes the chat contact to agent's personal queue (based on this email address)
-    - Once customer is in queue, set your agent to Available state
-    - Accept the incoming Chat contact
-    - Exchange a couple of messages between agent and customer (i.e. asking customer about upgrading to video call)
-    - On the agent side, in the Join Meeting form, click Start
-    - This would trigger a device selection form, on both Agent and Customer side
-    - Join the meeting on the agent side
-    - Join the meeting on the customer side
-    - Camera(s) are disabled by default, click the camera button on each side to enable
-    - Test screen share (click on Content share button)
-    - End chat on the customer side
-    - Clear chat contact on the agent side
-    - Agent is ready for a next contact
+12. Test the solution
+     - Open your browser and navigate to Amazon CloudFront Distribution URL. 
+     - On the Login screen, provide your email address and temporary password you received via email
+     - In the demo solution, you will be asked to confirm your email address - select Email and wait for the confirmation code to be delivered, then enter the confirmation code in the form and submit
+     - At this point, the agent is logged in, and you could see Amazon Connect CCP on the left-hand side, and Amazon Chime meeting form on the right-hand side (Note: this may take a few moments to load. If the screen is not fully loading please try this in another browser to verify, it may be that the version or settings of your browser are blocking some things.)
+     - In the top-right corner, click on 'Demo website' link (best to open it in a new, detached window)
+     - On the demo-website, click "Video Call now" button, in bottom-right corner
+     - When prompted, provide your name (as a customer name)
+     - Provide your email address - please note, the demo Contact Flow (VideoCallEscalationChat) routes the chat contact to agent's personal queue (based on this email address)
+     - Once customer is in queue, set your agent to Available state
+     - Accept the incoming Chat contact
+     - Exchange a couple of messages between agent and customer (i.e. asking customer about upgrading to video call)
+     - On the agent side, in the Join Meeting form, click Start
+     - This would trigger a device selection form, on both Agent and Customer side
+     - Join the meeting on the agent side
+     - Join the meeting on the customer side
+     - Camera(s) are disabled by default, click the camera button on each side to enable
+     - Test screen share (click on Content share button)
+     - End chat on the customer side
+     - Clear chat contact on the agent side
+     - Agent is ready for a next contact
 
 
 ## Solution Authentication diagram (without SSO)

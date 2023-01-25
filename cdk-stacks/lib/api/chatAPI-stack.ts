@@ -26,7 +26,7 @@ export class ChatAPIStack extends cdk.NestedStack {
         //create startChat Lambda
         const startChatLambda = new nodeLambda.NodejsFunction(this, 'StartChatLambda', {
             functionName: `${props.cdkAppName}-StartChatLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ChatAPI/startChat.js',
             timeout: cdk.Duration.seconds(20),
             environment: {

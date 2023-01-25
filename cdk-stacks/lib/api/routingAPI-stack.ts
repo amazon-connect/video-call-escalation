@@ -27,7 +27,7 @@ export class RoutingAPIStack extends cdk.NestedStack {
         //create createAdHocRoute Lambda
         const createAdHocRouteLambda = new nodeLambda.NodejsFunction(this, 'CreateAdHocRouteLambda', {
             functionName: `${props.cdkAppName}-CreateAdHocRouteLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/RoutingAPI/createAdHocRoute.js',
             timeout: cdk.Duration.seconds(20),
             environment: {

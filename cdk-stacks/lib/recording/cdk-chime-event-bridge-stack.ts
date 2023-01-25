@@ -36,7 +36,7 @@ export class CdkChimeEventBridgeStack extends cdk.Stack {
 
         const stopRecordingEventTargetLambda = new nodeLambda.NodejsFunction(this, 'StopRecordingEventTargetLambda', {
             functionName: `${configParams['CdkAppName']}-StopRecordingEventTargetLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/RecordingAPI/stopRecordingEventTarget.js',
             timeout: cdk.Duration.seconds(20),
             environment: {

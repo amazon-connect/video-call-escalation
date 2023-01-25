@@ -12,6 +12,7 @@ import { CognitoStack } from '../lib/infrastructure/cognito-stack';
 import { DynamoDBStack } from '../lib/infrastructure/dynamodb-stack';
 
 import { ConnectAPIStack } from '../lib/api/connectAPI-stack';
+import { ConnectAPIUpdateStack } from '../lib/api/connectAPI-update-stack';
 import { ChimeAPIStack } from '../lib/api/chimeAPI-stack';
 import { ChatAPIStack } from '../lib/api/chatAPI-stack';
 import { MeetingAPIStack } from '../lib/api/meetingAPI-stack';
@@ -94,6 +95,12 @@ export class CdkBackendStack extends cdk.Stack {
       cdkAppName: configParams['CdkAppName'],
     });
     connectAPIStack.addDependency(cognitoStack);
+
+    const connectAPIUpdateStack = new ConnectAPIUpdateStack(this, 'connectAPIUpdateStack', {
+      ccpLambdaRoleArn: connectAPIStack.ccpLambdaRoleArn
+    });
+    connectAPIUpdateStack.addDependency(connectAPIStack);
+
 
     const chimeAPIStack = new ChimeAPIStack(this, 'ChimeAPIStack', {
       SSMParams: ssmParams,
@@ -179,6 +186,14 @@ export class CdkBackendStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "userPoolId", {
       value: cognitoStack.userPool.userPoolId
+    });
+
+    new cdk.CfnOutput(this, "ccpLoginRoleName", {
+      value: connectAPIStack.ccpLambdaRoleName || ''
+    });
+
+    new cdk.CfnOutput(this, "ccpLoginRoleArn", {
+      value: connectAPIStack.ccpLambdaRoleArn || ''
     });
   }
 }

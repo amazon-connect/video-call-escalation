@@ -22,13 +22,15 @@ export interface ConnectAPIStackProps extends cdk.NestedStackProps {
 export class ConnectAPIStack extends cdk.NestedStack {
 
     public readonly connectAPI: apigw2.IHttpApi;
+    public readonly ccpLambdaRoleArn: string | undefined;
+    public readonly ccpLambdaRoleName: string | undefined;
 
     constructor(scope: cdk.Construct, id: string, props: ConnectAPIStackProps) {
         super(scope, id, props);
 
         const ccpLoginLambda = new nodeLambda.NodejsFunction(this, 'CCPLoginLambda', {
             functionName: `${props.cdkAppName}-CCPLoginLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ConnectAPI/ccpLogin.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -63,7 +65,7 @@ export class ConnectAPIStack extends cdk.NestedStack {
 
         const putConnectUserCacheLambda = new nodeLambda.NodejsFunction(this, 'PutConnectUserCacheLambda', {
             functionName: `${props.cdkAppName}-PutConnectUserCacheLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ConnectAPI/putConnectUserCache.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -99,7 +101,7 @@ export class ConnectAPIStack extends cdk.NestedStack {
 
         const setConnectUserIdLambda = new nodeLambda.NodejsFunction(this, 'SetConnectUserIdLambda', {
             functionName: `${props.cdkAppName}-SetConnectUserIdLambda`,
-            runtime: lambda.Runtime.NODEJS_12_X,
+            runtime: lambda.Runtime.NODEJS_14_X,
             entry: 'lambdas/handlers/ConnectAPI/setConnectUserId.js',
             timeout: cdk.Duration.seconds(20),
             environment: {
@@ -180,6 +182,8 @@ export class ConnectAPIStack extends cdk.NestedStack {
             })]
         }));
 
+        this.ccpLambdaRoleArn = ccpLoginLambda.role?.roleArn
+        this.ccpLambdaRoleName = ccpLoginLambda.role?.roleName
         this.connectAPI = connectAPI;
 
     }
