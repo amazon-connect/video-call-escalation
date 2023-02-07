@@ -38,6 +38,9 @@ export class ConnectAPIStack extends cdk.NestedStack {
             }
         });
 
+        //giving lambda role permission to assume its self
+        ccpLoginLambda.role?.grantAssumeRole(ccpLoginLambda.role);
+
         //Allow connectAPILambda to invoke Amazon Connect
         ccpLoginLambda.role?.attachInlinePolicy(new iam.Policy(this, 'ConnectGetFederationTokenAccess', {
             statements: [

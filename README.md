@@ -148,22 +148,13 @@ This step assumes you have completed all the prerequisites, and you have an exis
     - Wait for all resources to be provisioned before continuing to the next step
     - AWS CDK output will be provided in your Terminal (Amazon Cognito User Pool Id, Amazon CloudFront Distribution URL)
     
-7. Update CCPLogin Role
-   - From your AWS CDK output get the ccpLoginRoleName and ccpLoginRoleArn outputs
-   - Replace `ccpLoginRoleName` and `ccpLoginRoleArn` with their values in the below command and run it:
-   
-   `aws iam update-assume-role-policy --role-name ccpLoginRoleName --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"},{"Effect":"Allow","Principal":{"AWS":"ccpLoginRoleArn"},"Action":"sts:AssumeRole"}]}'
-     `
 
-   - This will allow the CCPLoginRole to assume its own role (needed in the CCPLoginLambda). If you are using SSO you will make another update to this (see SSO instructions). 
-
-9. Configure Amazon Connect Approved Origins
+7. Configure Amazon Connect Approved Origins
     - Login into your AWS Console
     - Navigate to Amazon Connect -> Your instance alias -> Approved origins
     - Click + Add origin
-    - Enter your Amazon CloudFront Distribution URL (from the previous step)
 
-10. Configure API Allowed Origins (optional)
+8. Configure API Allowed Origins (optional)
      - Cross-origin resource sharing (CORS) is a browser security feature that restricts cross-origin HTTP requests that are initiated from scripts running in the browser. At this point, we can restrict our APIs to be accessible only from our Amazon CloudFront Distribution domain (origin).
      - In your terminal, navigate to `video-call-escalation/cdk-stacks`
      - Start the configuration script in interactive mode, with additional -l (`load`) parameter  
@@ -177,7 +168,7 @@ This step assumes you have completed all the prerequisites, and you have an exis
      - While in `video-call-escalation/cdk-stacks`, run the deploy script: `npm run cdk:deploy`
      - Wait for the CDK stacks to be updated
 
-11. Create a test agent (user)
+9. Create a test agent (user)
      - To create an Amazon Cognito user, you'll need Cognito User Pool Id (created in step 5 - check for the AWS CDK Output, or check it in your AWS Console > Cognito User Pools)
      - Create an Amazon Cognito user by executing:  
      `aws cognito-idp admin-create-user --region yourDesiredRegion --user-pool-id yourUserPoolId  --username yourEmailAddress --user-attributes Name=name,Value=YourName`
@@ -191,7 +182,7 @@ This step assumes you have completed all the prerequisites, and you have an exis
      - Click Save, then Create users
      - Note: Amazon Cognito accepts + in the email (username), for instance when using a single email address for multiple users, while Amazon Connect UI doesn't support + in the username. Therefore, create Amazon Cognito user with +, but in Amazon Connect, replace + with _
 
-12. Test the solution
+10. Test the solution
      - Open your browser and navigate to Amazon CloudFront Distribution URL. 
      - On the Login screen, provide your email address and temporary password you received via email
      - In the demo solution, you will be asked to confirm your email address - select Email and wait for the confirmation code to be delivered, then enter the confirmation code in the form and submit
