@@ -18,7 +18,7 @@
         ]
     },
     "dependencies": {
-        "@aws-amplify/api-rest": "^2.0.29",
+        "@aws-amplify/api-rest": "^3.5.6",
         "@aws-amplify/auth": "^4.3.19",
         "@aws-amplify/ui-react": "^5.0.4",
         "@babel/runtime": "^7.12.18",
@@ -26,7 +26,7 @@
         "amazon-chime-sdk-js": "^3.6.0",
         "amazon-connect-chatjs": "^1.1.12",
         "amazon-connect-streams": "^2.2.0",
-        "aws-amplify": "^5.3.3",
+        "aws-amplify": "^5.3.12",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "react-router-dom": "^5.1.2",
